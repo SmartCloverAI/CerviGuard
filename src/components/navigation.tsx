@@ -23,8 +23,8 @@ export default function Navigation({ items }: { items: NavItem[] }) {
             className={clsx(
               "rounded-lg px-3 py-2 font-medium transition",
               isActive
-                ? "bg-sky-100 text-sky-800"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                ? "bg-teal-100 text-teal-800"
+                : "text-slate-600 hover:bg-teal-50 hover:text-teal-800",
             )}
           >
             {item.label}

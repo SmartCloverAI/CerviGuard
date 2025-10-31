@@ -24,7 +24,7 @@ export default async function CaseDetailPage({ params }: { params: { caseId: str
 
   return (
     <div className="space-y-6">
-      <Link href="/cases" className="text-sm text-sky-600 hover:text-sky-800">
+      <Link href="/cases" className="text-sm text-teal-600 hover:text-teal-800">
         ← Back to cases
       </Link>
 

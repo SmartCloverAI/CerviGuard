@@ -30,7 +30,7 @@ export default async function CasesPage() {
           </p>
         </div>
         <Link href="/cases/new" className="inline-flex items-center gap-2 text-sm font-semibold">
-          <span className="rounded-full bg-sky-600 px-3 py-1 text-white">+ New case</span>
+          <span className="rounded-full bg-teal-600 px-3 py-1 text-white">+ New case</span>
         </Link>
       </div>
 
@@ -52,14 +52,14 @@ export default async function CasesPage() {
               <tr>
                 <td colSpan={user.role === "admin" ? 7 : 6} className="px-4 py-6 text-center text-sm">
                   No cases yet.{" "}
-                  <Link href="/cases/new" className="text-sky-600 hover:text-sky-800">
+                  <Link href="/cases/new" className="text-teal-600 hover:text-teal-800">
                     Upload an image to get started.
                   </Link>
                 </td>
               </tr>
             ) : (
               cases.map((record) => (
-                <tr key={record.id} className="hover:bg-slate-50">
+                <tr key={record.id} className="hover:bg-teal-50">
                   <td className="px-4 py-3 font-mono text-xs text-slate-600">
                     {record.id.slice(-12)}
                   </td>
@@ -95,7 +95,7 @@ export default async function CasesPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/cases/${record.id}`}
-                      className="text-xs font-medium text-sky-600 hover:text-sky-800"
+                      className="text-xs font-medium text-teal-600 hover:text-teal-800"
                     >
                       View
                     </Link>

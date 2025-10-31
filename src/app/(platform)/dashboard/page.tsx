@@ -57,14 +57,14 @@ export default async function DashboardPage() {
               Track the most recent uploads and their automated results.
             </p>
           </div>
-          <Link href="/cases" className="text-sm font-medium text-sky-700 hover:text-sky-900">
+          <Link href="/cases" className="text-sm font-medium text-teal-700 hover:text-teal-900">
             View all
           </Link>
         </div>
         {recentCases.length === 0 ? (
           <p className="text-sm text-slate-500">
             No cases yet.{" "}
-            <Link href="/cases/new" className="text-sky-600 hover:text-sky-800">
+            <Link href="/cases/new" className="text-teal-600 hover:text-teal-800">
               Create your first case.
             </Link>
           </p>
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
                 <div>
                   <Link
                     href={`/cases/${record.id}`}
-                    className="font-semibold text-slate-800 hover:text-sky-700"
+                    className="font-semibold text-slate-800 hover:text-teal-700"
                   >
                     Case {record.id.slice(-6)}
                   </Link>

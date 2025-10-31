@@ -8,21 +8,21 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-white text-slate-900 antialiased font-sans;
   }
 
   a {
-    @apply text-sky-600 underline underline-offset-2 transition hover:text-sky-800;
+    @apply text-teal-600 underline underline-offset-2 transition hover:text-teal-800;
   }
 
   input,
   textarea,
   select {
-    @apply w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200;
+    @apply w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200;
   }
 
   button {
-    @apply inline-flex items-center justify-center rounded-md border border-transparent bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
   }
 }
 
@@ -32,6 +32,6 @@
   }
 
   .badge {
-    @apply inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-sky-700 ring-1 ring-inset ring-sky-200;
+    @apply inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-teal-700 ring-1 ring-inset ring-teal-200;
   }
 }
