@@ -14,7 +14,7 @@ import { getEdgeSdk } from "./sdk";
 
 export interface CreateUserInput {
   username: string;
-  passwordHash: string;
+  passwordHash?: string | null;
   role: UserRole;
 }
 
@@ -101,6 +101,9 @@ class LocalCStoreClient implements CStoreClient {
     const state = await this.loadState();
     if (state.users.some((user) => user.username.toLowerCase() === input.username.toLowerCase())) {
       throw new Error(`User ${input.username} already exists`);
+    }
+    if (!input.passwordHash) {
+      throw new Error("passwordHash is required when using the local mock CStore client");
     }
 
     const now = new Date().toISOString();
@@ -235,7 +238,7 @@ class RemoteCStoreClient implements CStoreClient {
       id: randomUUID(),
       username: input.username,
       role: input.role,
-      passwordHash: input.passwordHash,
+      passwordHash: input.passwordHash ?? null,
       createdAt: now,
       updatedAt: now,
       isActive: true,

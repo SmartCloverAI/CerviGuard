@@ -4,7 +4,7 @@ export interface UserRecord {
   id: string;
   username: string;
   role: UserRole;
-  passwordHash: string;
+  passwordHash: string | null;
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
