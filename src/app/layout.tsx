@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import GitHubLink from "@/components/github-link";
 
 export const metadata: Metadata = {
   title: "SmartClover CerviGuard Pilot",
@@ -14,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <GitHubLink />
+      </body>
     </html>
   );
 }
