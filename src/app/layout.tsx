@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SmartClover CerviGuard Pilot",
   description:
-    "Secure pilot console for SmartClover's cervical screening workflow powered by Ratio1.ai.",
+    "Secure pilot console for SmartClover's cervical screening workflow, powered by decentralized, secure and privacy-oriented technology.",
 };
 
 export default function RootLayout({

@@ -41,11 +41,11 @@ export default function CreateUserForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card space-y-4 border-sky-100 bg-white">
+    <form onSubmit={handleSubmit} className="card space-y-4 border-teal-100 bg-white">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Add a new pilot account</h2>
         <p className="text-sm text-slate-500">
-          Credentials are hashed before being stored in Ratio1 CStore. Share login details securely.
+          Credentials are hashed before being stored in the decentralized metadata ledger. Share login details securely.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">

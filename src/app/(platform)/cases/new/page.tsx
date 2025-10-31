@@ -13,8 +13,8 @@ export default async function NewCasePage() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Add new cervical screening case</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Images are encrypted and stored through Ratio1&apos;s R1FS. Analytic results are written to
-          the decentralized CStore ledger.
+          Images are encrypted and stored through decentralized, secure and privacy-oriented
+          technology. Analytic results are written to the shared metadata ledger.
         </p>
       </div>
       <NewCaseForm />

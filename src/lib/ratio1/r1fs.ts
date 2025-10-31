@@ -1,8 +1,7 @@
-import { randomUUID } from "crypto";
 import { R1FS_ENDPOINT, USE_MOCK_RATIO1 } from "../config";
 import { readBinaryFile, storeBinaryFile } from "../storage/fileStore";
 import path from "path";
-import { edgeFetch } from "./edgeClient";
+import { getEdgeSdk } from "./sdk";
 
 export interface R1FSStoreResult {
   cid: string;
@@ -36,43 +35,43 @@ class LocalR1FSClient implements R1FSClient {
 }
 
 class RemoteR1FSClient implements R1FSClient {
-  private baseUrl: string;
-
-  constructor(endpoint: string) {
-    this.baseUrl = endpoint.replace(/\/$/, "");
+  private async getSdk() {
+    return getEdgeSdk();
   }
 
   async store(bytes: Buffer, filename: string, mimeType: string): Promise<R1FSStoreResult> {
-    const url = `${this.baseUrl}/upload`;
-    const formData = new FormData();
-    const payload = new Uint8Array(bytes);
-    const blob = new Blob([payload], { type: mimeType });
-    formData.append("file", blob, filename);
-    formData.append("requestId", randomUUID());
-
-    const response = await edgeFetch(url, {
-      method: "POST",
-      body: formData,
+    const sdk = await this.getSdk();
+    const result = await sdk.r1fs.addFile({
+      file: bytes,
+      filename,
+      contentType: mimeType,
     });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`R1FS upload failed: ${response.status} ${body}`);
-    }
-    const result = (await response.json()) as { cid: string };
     return { cid: result.cid };
   }
 
   async fetch(cid: string): Promise<{ buffer: Buffer; mimeType: string }> {
-    const url = `${this.baseUrl}/files/${cid}`;
-    const response = await edgeFetch(url, { method: "GET" });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`R1FS fetch failed: ${response.status} ${body}`);
+    const sdk = await this.getSdk();
+    const result = await sdk.r1fs.getFile({ cid });
+
+    if (result instanceof Response) {
+      const mimeType = result.headers.get("content-type") ?? "application/octet-stream";
+      const arrayBuffer = await result.arrayBuffer();
+      return { buffer: Buffer.from(arrayBuffer), mimeType };
     }
-    const arrayBuffer = await response.arrayBuffer();
-    const mimeType = response.headers.get("content-type") ?? "application/octet-stream";
-    return { buffer: Buffer.from(arrayBuffer), mimeType };
+
+    if (result?.file_base64_str) {
+      const mimeType =
+        result.meta?.filename && result.meta.filename.endsWith(".png")
+          ? "image/png"
+          : result.meta?.filename && (result.meta.filename.endsWith(".jpg") || result.meta.filename.endsWith(".jpeg"))
+            ? "image/jpeg"
+            : result.meta?.filename && result.meta.filename.endsWith(".webp")
+              ? "image/webp"
+              : "application/octet-stream";
+      return { buffer: Buffer.from(result.file_base64_str, "base64"), mimeType };
+    }
+
+    throw new Error("Unexpected R1FS response format");
   }
 }
 
@@ -87,7 +86,7 @@ export function getR1FSClient(): Promise<R1FSClient> {
       if (!R1FS_ENDPOINT) {
         throw new Error("R1FS_API_URL must be defined when mock mode is disabled.");
       }
-      return new RemoteR1FSClient(R1FS_ENDPOINT);
+      return new RemoteR1FSClient();
     })();
   }
   return clientPromise;

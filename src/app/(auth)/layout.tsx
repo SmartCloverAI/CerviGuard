@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sky-50 via-white to-fuchsia-100 p-6">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-50 via-white to-teal-100 p-6">
       <div className="w-full max-w-md">
         <div className="card">
           <div className="mb-6">

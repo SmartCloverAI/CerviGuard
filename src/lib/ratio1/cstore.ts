@@ -1,9 +1,16 @@
 import { randomUUID } from "crypto";
-import { CSTORE_ENDPOINT, DEFAULT_ADMIN, USE_MOCK_RATIO1 } from "../config";
+import bcrypt from "bcryptjs";
+import {
+  CSTORE_CASES_HKEY,
+  CSTORE_ENDPOINT,
+  CSTORE_USERS_HKEY,
+  CSTORE_USER_INDEX_HKEY,
+  DEFAULT_ADMIN,
+  USE_MOCK_RATIO1,
+} from "../config";
 import type { CaseRecord, PublicUser, UserRecord, UserRole } from "../types";
 import { ensureStorageRoot, readJsonFile, writeJsonFile } from "../storage/fileStore";
-import bcrypt from "bcryptjs";
-import { edgeFetch } from "./edgeClient";
+import { getEdgeSdk } from "./sdk";
 
 export interface CreateUserInput {
   username: string;
@@ -162,93 +169,158 @@ class LocalCStoreClient implements CStoreClient {
   }
 }
 
+function normalizeUsername(username: string): string {
+  return username.trim().toLowerCase();
+}
+
+function parseRecord<T>(value: string | null): T | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    return JSON.parse(value) as T;
+  } catch (error) {
+    console.warn("Failed to parse CStore record", error);
+    return null;
+  }
+}
+
 class RemoteCStoreClient implements CStoreClient {
-  private baseUrl: string;
-
-  constructor(endpoint: string) {
-    this.baseUrl = endpoint.replace(/\/$/, "");
+  private async getSdk() {
+    return getEdgeSdk();
   }
 
-  private async request<T>(path: string, init?: RequestInit) {
-    const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
-    const response = await edgeFetch(url, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {}),
-      },
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`CStore request failed: ${response.status} ${body}`);
+  private toPublicUser(user: UserRecord): PublicUser {
+    const { passwordHash, ...rest } = user;
+    void passwordHash;
+    return rest;
+  }
+
+  async getUserByUsername(username: string): Promise<UserRecord | null> {
+    const sdk = await this.getSdk();
+    const normalized = normalizeUsername(username);
+    const userId = await sdk.cstore.hget({ hkey: CSTORE_USER_INDEX_HKEY, key: normalized });
+    if (!userId) {
+      return null;
     }
-    return (await response.json()) as T;
+    const rawUser = await sdk.cstore.hget({ hkey: CSTORE_USERS_HKEY, key: userId });
+    return parseRecord<UserRecord>(rawUser);
   }
 
-  getUserByUsername(username: string): Promise<UserRecord | null> {
-    return this.request<UserRecord | null>("/users/getByUsername", {
-      method: "POST",
-      body: JSON.stringify({ username }),
+  async getUserById(id: string): Promise<UserRecord | null> {
+    const sdk = await this.getSdk();
+    const rawUser = await sdk.cstore.hget({ hkey: CSTORE_USERS_HKEY, key: id });
+    return parseRecord<UserRecord>(rawUser);
+  }
+
+  async listUsers(): Promise<PublicUser[]> {
+    const sdk = await this.getSdk();
+    const records = await sdk.cstore.hgetall({ hkey: CSTORE_USERS_HKEY });
+    return Object.values(records)
+      .map((value) => parseRecord<UserRecord>(value))
+      .filter((user): user is UserRecord => Boolean(user))
+      .map((user) => this.toPublicUser(user));
+  }
+
+  async createUser(input: CreateUserInput): Promise<PublicUser> {
+    const sdk = await this.getSdk();
+    const normalized = normalizeUsername(input.username);
+    const existing = await sdk.cstore.hget({ hkey: CSTORE_USER_INDEX_HKEY, key: normalized });
+    if (existing) {
+      throw new Error(`User ${input.username} already exists`);
+    }
+
+    const now = new Date().toISOString();
+    const user: UserRecord = {
+      id: randomUUID(),
+      username: input.username,
+      role: input.role,
+      passwordHash: input.passwordHash,
+      createdAt: now,
+      updatedAt: now,
+      isActive: true,
+    };
+
+    await sdk.cstore.hset({
+      hkey: CSTORE_USERS_HKEY,
+      key: user.id,
+      value: JSON.stringify(user),
+    });
+
+    await sdk.cstore.hset({
+      hkey: CSTORE_USER_INDEX_HKEY,
+      key: normalized,
+      value: user.id,
+    });
+
+    return this.toPublicUser(user);
+  }
+
+  async updateUserPassword(input: UpdateUserPasswordInput): Promise<PublicUser> {
+    const sdk = await this.getSdk();
+    const existingRaw = await sdk.cstore.hget({ hkey: CSTORE_USERS_HKEY, key: input.userId });
+    const existing = parseRecord<UserRecord>(existingRaw);
+    if (!existing) {
+      throw new Error("User not found");
+    }
+    const updated: UserRecord = {
+      ...existing,
+      passwordHash: input.passwordHash,
+      updatedAt: new Date().toISOString(),
+    };
+    await sdk.cstore.hset({
+      hkey: CSTORE_USERS_HKEY,
+      key: updated.id,
+      value: JSON.stringify(updated),
+    });
+    return this.toPublicUser(updated);
+  }
+
+  async createCase(record: CaseRecord): Promise<void> {
+    const sdk = await this.getSdk();
+    await sdk.cstore.hset({
+      hkey: CSTORE_CASES_HKEY,
+      key: record.id,
+      value: JSON.stringify(record),
     });
   }
 
-  getUserById(id: string): Promise<UserRecord | null> {
-    return this.request<UserRecord | null>("/users/getById", {
-      method: "POST",
-      body: JSON.stringify({ id }),
+  async updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord> {
+    const sdk = await this.getSdk();
+    const existingRaw = await sdk.cstore.hget({ hkey: CSTORE_CASES_HKEY, key: caseId });
+    const existing = parseRecord<CaseRecord>(existingRaw);
+    if (!existing) {
+      throw new Error("Case not found");
+    }
+    const updated: CaseRecord = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    await sdk.cstore.hset({
+      hkey: CSTORE_CASES_HKEY,
+      key: caseId,
+      value: JSON.stringify(updated),
     });
+    return updated;
   }
 
-  listUsers(): Promise<PublicUser[]> {
-    return this.request<PublicUser[]>("/users/list", { method: "GET" });
+  async getCase(caseId: string): Promise<CaseRecord | null> {
+    const sdk = await this.getSdk();
+    const raw = await sdk.cstore.hget({ hkey: CSTORE_CASES_HKEY, key: caseId });
+    return parseRecord<CaseRecord>(raw);
   }
 
-  createUser(input: CreateUserInput): Promise<PublicUser> {
-    return this.request<PublicUser>("/users/create", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
+  async listCasesForUser(userId: string): Promise<CaseRecord[]> {
+    return (await this.listAllCases()).filter((record) => record.userId === userId);
   }
 
-  updateUserPassword(input: UpdateUserPasswordInput): Promise<PublicUser> {
-    return this.request<PublicUser>("/users/updatePassword", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-  }
-
-  createCase(record: CaseRecord): Promise<void> {
-    return this.request("/cases/create", {
-      method: "POST",
-      body: JSON.stringify(record),
-    });
-  }
-
-  updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord> {
-    return this.request<CaseRecord>("/cases/update", {
-      method: "POST",
-      body: JSON.stringify({ caseId, updates }),
-    });
-  }
-
-  getCase(caseId: string): Promise<CaseRecord | null> {
-    return this.request<CaseRecord | null>("/cases/get", {
-      method: "POST",
-      body: JSON.stringify({ caseId }),
-    });
-  }
-
-  listCasesForUser(userId: string): Promise<CaseRecord[]> {
-    return this.request<CaseRecord[]>("/cases/listByUser", {
-      method: "POST",
-      body: JSON.stringify({ userId }),
-    });
-  }
-
-  listAllCases(): Promise<CaseRecord[]> {
-    return this.request<CaseRecord[]>("/cases/listAll", {
-      method: "GET",
-    });
+  async listAllCases(): Promise<CaseRecord[]> {
+    const sdk = await this.getSdk();
+    const records = await sdk.cstore.hgetall({ hkey: CSTORE_CASES_HKEY });
+    return Object.values(records)
+      .map((value) => parseRecord<CaseRecord>(value))
+      .filter((record): record is CaseRecord => Boolean(record));
   }
 }
 
@@ -265,7 +337,7 @@ export function getCStoreClient(): Promise<CStoreClient> {
       if (!CSTORE_ENDPOINT) {
         throw new Error("CSTORE_API_URL must be defined when mock mode is disabled.");
       }
-      return new RemoteCStoreClient(CSTORE_ENDPOINT);
+      return new RemoteCStoreClient();
     })();
   }
   return clientPromise;

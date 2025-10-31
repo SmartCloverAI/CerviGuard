@@ -69,7 +69,7 @@ export async function readBinaryFile(cid: string) {
   const entries = await readdir(folder);
   const match = entries.find((entry) => entry.startsWith(cid));
   if (!match) {
-    throw new Error(`File with CID ${cid} not found in mock R1FS storage.`);
+    throw new Error(`File with CID ${cid} not found in mock storage.`);
   }
   const filePath = path.join(folder, match);
   const file = await readFile(filePath);

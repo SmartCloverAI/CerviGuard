@@ -54,7 +54,7 @@ export default function NewCaseForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-dashed border-sky-200 bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-dashed border-teal-200 bg-white p-6 shadow-sm">
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-600">Cervical image</label>
         <input
@@ -67,7 +67,7 @@ export default function NewCaseForm() {
           }}
         />
         <p className="mt-1 text-xs text-slate-500">
-          We encrypt images client-side before transit via HTTPS to the Ratio1 network.
+          We encrypt images client-side before transit to our decentralized, secure and privacy-oriented network.
         </p>
       </div>
       <div>
