@@ -34,6 +34,9 @@ You can change these defaults via environment variables (see below). All pilot d
 | `R1EN_APP_ID` | Edge application identifier | — |
 | `R1EN_APP_TOKEN` | Edge auth token (bearer) | — |
 | `R1EN_CHAINSTORE_PEERS` | Optional JSON array of peer URLs | `[]` |
+| `EE_CSTORE_AUTH_HKEY` | Hash key used by `@ratio1/cstore-auth-ts` | — |
+| `EE_CSTORE_AUTH_SECRET` | Pepper used by the auth layer | — |
+| `EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW` | One-time bootstrap admin password | — |
 | `SESSION_SECRET` | Secret for signing session tokens | generated dev secret |
 | `SESSION_MAX_AGE` | Session lifespan (seconds) | `28800` (8 hours) |
 | `DEFAULT_ADMIN_USERNAME` | Seed admin username (mock mode only) | `demo` |
@@ -82,6 +85,8 @@ src/
 - Jest or E2E tests are not yet wired for this pilot. When integrating into CI, consider adding API contract tests around `src/app/api`.
 - The mock clients hash uploaded bytes to create CIDs. Deleting `.ratio1-local-state` will clear local state.
 - Switch between mocks and the edge gateway by flipping `USE_RATIO1_MOCK`; production containers should set it to `false` and provide the `R1EN_*` credentials.
+- When using the live edge network, provide the `EE_CSTORE_AUTH_*` variables so `@ratio1/cstore-auth-ts` can bootstrap authentication.
+- Admin-triggered password resets require the mock auth mode; in live mode, users must supply their current password via the auth API.
 - Global styling lives in `src/app/globals.css` (Tailwind v4); adjust class-based helpers there when tweaking the UI.
 
 ---

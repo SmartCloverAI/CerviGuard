@@ -68,6 +68,10 @@ export const STORAGE_ROOT = env.LOCAL_STATE_DIR ?? `${process.cwd()}/.ratio1-loc
 export const CSTORE_USERS_HKEY = env.CSTORE_USERS_HKEY ?? "cerviguard:users";
 export const CSTORE_USER_INDEX_HKEY = env.CSTORE_USER_INDEX_HKEY ?? "cerviguard:usernames";
 export const CSTORE_CASES_HKEY = env.CSTORE_CASES_HKEY ?? "cerviguard:cases";
+export const CSTORE_AUTH_HKEY = env.EE_CSTORE_AUTH_HKEY ?? env.CSTORE_AUTH_HKEY ?? null;
+export const CSTORE_AUTH_SECRET = env.EE_CSTORE_AUTH_SECRET ?? env.CSTORE_AUTH_SECRET ?? null;
+export const CSTORE_AUTH_BOOTSTRAP_PASSWORD =
+  env.EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW ?? env.CSTORE_AUTH_BOOTSTRAP_ADMIN_PW ?? null;
 
 export const DEFAULT_ADMIN = {
   username: env.DEFAULT_ADMIN_USERNAME ?? "demo",
