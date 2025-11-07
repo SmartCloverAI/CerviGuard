@@ -20,10 +20,13 @@ export async function POST(request: Request) {
 
     await setSessionCookie(authResult.sessionToken);
 
-    const publicUser = (({ passwordHash, ...rest }) => {
-      void passwordHash;
-      return rest;
-    })(authResult.user);
+    const user = authResult.user;
+    if (!user) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    const { passwordHash, ...publicUser } = user;
+    void passwordHash;
     return NextResponse.json({ user: publicUser });
   } catch (error) {
     if (error instanceof z.ZodError) {
