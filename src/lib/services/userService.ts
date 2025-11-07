@@ -34,18 +34,20 @@ export async function authenticateUser(username: string, password: string) {
     const authUser = await authClient.simple.authenticate(username, password);
     let user = await cstore.getUserByUsername(authUser.username);
     if (!user) {
+      let creationError: unknown = null;
       try {
-        user = await cstore.createUser({
+        await cstore.createUser({
           username: authUser.username,
           passwordHash: "cstore-auth-managed",
           role: authUser.role ?? "user",
         });
       } catch (error) {
+        creationError = error;
         console.warn("[auth] Failed to create metadata record during authentication", error);
-        user = await cstore.getUserByUsername(authUser.username);
-        if (!user) {
-          throw error;
-        }
+      }
+      user = await cstore.getUserByUsername(authUser.username);
+      if (!user) {
+        throw creationError ?? new Error("Failed to load user metadata after authentication");
       }
     }
     if (!user.isActive) {
