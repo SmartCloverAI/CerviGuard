@@ -2,14 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { SESSION_COOKIE } from "@/lib/constants";
+import { DEMO_SESSION_SECRET, readSessionSecretFromEnv } from "@/lib/constants/session";
 
 const PUBLIC_PATHS = ["/login"];
 
-const secret =
-  process.env.SESSION_SECRET ?? process.env.NEXT_PUBLIC_SESSION_SECRET ?? null;
+const envSecret = readSessionSecretFromEnv(process.env as Record<string, string | undefined>);
+const secret = envSecret ?? DEMO_SESSION_SECRET;
 
-if (!secret) {
-  throw new Error("SESSION_SECRET must be provided to run middleware.");
+if (!envSecret) {
+  console.warn(
+    "[middleware] SESSION_SECRET* env vars are missing; using demo fallback. TODO: replace with a secure secret before deploying.",
+  );
 }
 
 const secretKey = new TextEncoder().encode(secret);

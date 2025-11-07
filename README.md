@@ -37,7 +37,7 @@ You can change these defaults via environment variables (see below). All pilot d
 | `EE_CSTORE_AUTH_HKEY` | Hash key used by `@ratio1/cstore-auth-ts` | — |
 | `EE_CSTORE_AUTH_SECRET` | Pepper used by the auth layer | — |
 | `EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW` | One-time bootstrap admin password | — |
-| `SESSION_SECRET` | Secret for signing session tokens | generated dev secret |
+| `SESSION_SECRET` / `EE_SESSION_SECRET` / `EDGE_SESSION_SECRET` | Secret for signing session tokens | `demo-session-secret-change-me` *(fallback – TODO replace in prod)* |
 | `SESSION_MAX_AGE` | Session lifespan (seconds) | `28800` (8 hours) |
 | `DEFAULT_ADMIN_USERNAME` | Seed admin username (mock mode only) | `demo` |
 | `DEFAULT_ADMIN_PASSWORD` | Seed admin password (mock mode only) | `demo` |
@@ -45,6 +45,8 @@ You can change these defaults via environment variables (see below). All pilot d
 | `CSTORE_USER_INDEX_HKEY` | Hash key used for username lookups | `cerviguard:usernames` |
 | `CSTORE_CASES_HKEY` | Hash key used for case records | `cerviguard:cases` |
 | `LOCAL_STATE_DIR` | Filesystem path for mock storage | `.ratio1-local-state` |
+
+> ⚠️ **TODO:** Replace the bundled `demo-session-secret-change-me` fallback with a strong `SESSION_SECRET` (or equivalent) before deploying to production.
 
 When `R1FS_API_URL` and `CSTORE_API_URL` are both provided the mock layer is bypassed and the remote clients operate against the configured edge endpoints. The remote client contracts rely on `@ratio1/edge-sdk-ts` to speak to R1FS and CStore — adjust inside `src/lib/ratio1` if your deployment varies.
 
