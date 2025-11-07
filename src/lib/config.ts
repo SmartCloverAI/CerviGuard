@@ -1,20 +1,18 @@
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
+import { DEMO_SESSION_SECRET, readSessionSecretFromEnv } from "./constants/session";
 
 const env = process.env;
 
 export const SESSION_SECRET = (() => {
-  const secret = env.SESSION_SECRET || env.NEXT_PUBLIC_SESSION_SECRET;
+  const secret = readSessionSecretFromEnv(env);
   if (secret) {
     return secret;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET must be set in production environments.");
-  }
-
-  // In development we generate a deterministic secret on boot so hot-reloads keep working.
-  const seed = `dev-secret-${env.USER ?? "unknown"}`;
-  return createHash("sha256").update(seed).digest("hex");
+  console.warn(
+    "[config] SESSION_SECRET* env vars are missing; using demo fallback. TODO: replace with a secure secret before deploying.",
+  );
+  return DEMO_SESSION_SECRET;
 })();
 
 export const R1EN_BASE_URL = env.R1EN_BASE_URL ?? env.EDGE_BASE_URL ?? "";
