@@ -28,11 +28,11 @@ You can change these defaults via environment variables (see below). All pilot d
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `USE_RATIO1_MOCK` | Force local mocks (`true`/`false`) | `true` in dev, `false` in prod |
-| `R1FS_API_URL` | Base URL override for the R1FS service | derived from `R1EN_BASE_URL` |
-| `CSTORE_API_URL` | Base URL override for the CStore service | derived from `R1EN_BASE_URL` |
+| `R1FS_API_URL` | Base URL override for the R1FS service | derived from `R1EN_BASE_URL` *(demo fallback available)* |
+| `CSTORE_API_URL` | Base URL override for the CStore service | derived from `R1EN_BASE_URL` *(demo fallback available)* |
 | `R1EN_BASE_URL` | Edge gateway base URL (e.g. `https://edge.local`) | — |
-| `R1EN_APP_ID` | Edge application identifier | — |
-| `R1EN_APP_TOKEN` | Edge auth token (bearer) | — |
+| `R1EN_APP_ID` | Edge application identifier | `demo-edge-app-id` *(fallback – TODO replace in prod)* |
+| `R1EN_APP_TOKEN` | Edge auth token (bearer) | `demo-edge-app-token` *(fallback – TODO replace in prod)* |
 | `R1EN_CHAINSTORE_PEERS` | Optional JSON array of peer URLs | `[]` |
 | `EE_CSTORE_AUTH_HKEY` | Hash key used by `@ratio1/cstore-auth-ts` | — |
 | `EE_CSTORE_AUTH_SECRET` | Pepper used by the auth layer | — |
@@ -46,7 +46,7 @@ You can change these defaults via environment variables (see below). All pilot d
 | `CSTORE_CASES_HKEY` | Hash key used for case records | `cerviguard:cases` |
 | `LOCAL_STATE_DIR` | Filesystem path for mock storage | `.ratio1-local-state` |
 
-> ⚠️ **TODO:** Replace the bundled `demo-session-secret-change-me` fallback with a strong `SESSION_SECRET` (or equivalent) before deploying to production.
+> ⚠️ **TODO:** Replace the bundled demo fallbacks (`SESSION_SECRET`, R1FS endpoint `https://demo-r1fs.smartclover.invalid`, CStore endpoint `https://demo-cstore.smartclover.invalid`, `R1EN_APP_ID`, `R1EN_APP_TOKEN`) with secure production values before deploying.
 
 When `R1FS_API_URL` and `CSTORE_API_URL` are both provided the mock layer is bypassed and the remote clients operate against the configured edge endpoints. The remote client contracts rely on `@ratio1/edge-sdk-ts` to speak to R1FS and CStore — adjust inside `src/lib/ratio1` if your deployment varies.
 

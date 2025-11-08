@@ -3,6 +3,26 @@ import { DEMO_SESSION_SECRET, readSessionSecretFromEnv } from "./constants/sessi
 
 const env = process.env;
 
+const DEMO_R1FS_ENDPOINT = "https://demo-r1fs.smartclover.invalid";
+const DEMO_CSTORE_ENDPOINT = "https://demo-cstore.smartclover.invalid";
+const DEMO_R1EN_APP_ID = "demo-edge-app-id";
+const DEMO_R1EN_APP_TOKEN = "demo-edge-app-token";
+
+const mockFlag = env.USE_RATIO1_MOCK ?? env.USE_DECENTRALIZED_MOCK;
+export const USE_MOCK_RATIO1 = mockFlag
+  ? mockFlag === "true"
+  : process.env.NODE_ENV !== "production";
+
+function remoteConfigFallback(value: string, fallback: string, label: string) {
+  if (value) {
+    return value;
+  }
+  console.warn(
+    `[config] ${label} is missing; using demo fallback (${fallback}). TODO: replace before deploying.`,
+  );
+  return fallback;
+}
+
 export const SESSION_SECRET = (() => {
   const secret = readSessionSecretFromEnv(env);
   if (secret) {
@@ -16,15 +36,14 @@ export const SESSION_SECRET = (() => {
 })();
 
 export const R1EN_BASE_URL = env.R1EN_BASE_URL ?? env.EDGE_BASE_URL ?? "";
-export const R1EN_APP_ID = env.R1EN_APP_ID ?? env.EDGE_APP_ID ?? "";
-export const R1EN_APP_TOKEN = env.R1EN_APP_TOKEN ?? env.EDGE_APP_TOKEN ?? "";
+const rawAppId = env.R1EN_APP_ID ?? env.EDGE_APP_ID ?? "";
+const rawAppToken = env.R1EN_APP_TOKEN ?? env.EDGE_APP_TOKEN ?? "";
+export const R1EN_APP_ID = USE_MOCK_RATIO1 ? rawAppId : remoteConfigFallback(rawAppId, DEMO_R1EN_APP_ID, "R1EN_APP_ID");
+export const R1EN_APP_TOKEN = USE_MOCK_RATIO1
+  ? rawAppToken
+  : remoteConfigFallback(rawAppToken, DEMO_R1EN_APP_TOKEN, "R1EN_APP_TOKEN");
 export const R1EN_CHAINSTORE_PEERS =
   env.R1EN_CHAINSTORE_PEERS ?? env.EE_CHAINSTORE_PEERS ?? env.CHAINSTORE_PEERS ?? "";
-
-const mockFlag = env.USE_RATIO1_MOCK ?? env.USE_DECENTRALIZED_MOCK;
-export const USE_MOCK_RATIO1 = mockFlag
-  ? mockFlag === "true"
-  : process.env.NODE_ENV !== "production";
 
 export const R1FS_ENDPOINT = (() => {
   if (USE_MOCK_RATIO1) {
@@ -33,10 +52,7 @@ export const R1FS_ENDPOINT = (() => {
   const provided = env.R1FS_API_URL ?? env.STORAGE_API_URL ?? "";
   const derived = R1EN_BASE_URL ? `${R1EN_BASE_URL.replace(/\/$/, "")}/r1fs` : "";
   const endpoint = provided || derived;
-  if (!endpoint) {
-    throw new Error("R1FS endpoint must be configured when USE_RATIO1_MOCK is false.");
-  }
-  return endpoint;
+  return remoteConfigFallback(endpoint, DEMO_R1FS_ENDPOINT, "R1FS endpoint");
 })();
 
 export const CSTORE_ENDPOINT = (() => {
@@ -46,20 +62,8 @@ export const CSTORE_ENDPOINT = (() => {
   const provided = env.CSTORE_API_URL ?? env.METADATA_API_URL ?? "";
   const derived = R1EN_BASE_URL ? `${R1EN_BASE_URL.replace(/\/$/, "")}/cstore` : "";
   const endpoint = provided || derived;
-  if (!endpoint) {
-    throw new Error("CStore endpoint must be configured when USE_RATIO1_MOCK is false.");
-  }
-  return endpoint;
+  return remoteConfigFallback(endpoint, DEMO_CSTORE_ENDPOINT, "CStore endpoint");
 })();
-
-if (!USE_MOCK_RATIO1) {
-  if (!R1EN_APP_ID) {
-    throw new Error("R1EN_APP_ID must be set when USE_RATIO1_MOCK is false.");
-  }
-  if (!R1EN_APP_TOKEN) {
-    throw new Error("R1EN_APP_TOKEN must be set when USE_RATIO1_MOCK is false.");
-  }
-}
 
 export const STORAGE_ROOT = env.LOCAL_STATE_DIR ?? `${process.cwd()}/.ratio1-local-state`;
 
