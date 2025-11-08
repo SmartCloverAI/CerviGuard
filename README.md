@@ -48,6 +48,16 @@ You can change these defaults via environment variables (see below). All pilot d
 
 > ⚠️ **TODO:** Replace the bundled demo fallbacks (`SESSION_SECRET`, R1FS endpoint `https://demo-r1fs.smartclover.invalid`, CStore endpoint `https://demo-cstore.smartclover.invalid`, `R1EN_APP_ID`, `R1EN_APP_TOKEN`) with secure production values before deploying.
 
+## Versioning
+
+The UI footer displays the current release from the `APP_VERSION` constant in `src/components/version-footer.tsx`. Versions follow the `vMAJOR.MINOR.BUILD` format.
+
+- `MAJOR` – reserved for breaking platform changes and may only be modified when the user explicitly requests it.
+- `MINOR` – increment this for any new feature, UX enhancement, or behavior expansion (reset `BUILD` to `0` if you bump `MINOR`).
+- `BUILD` – increment this for every bug fix or maintenance change that does not introduce new functionality.
+
+Always update `APP_VERSION` before submitting work so the footer reflects the latest release category. If a change includes both fixes and new features, clarify with the user which component to bump.
+
 When `R1FS_API_URL` and `CSTORE_API_URL` are both provided the mock layer is bypassed and the remote clients operate against the configured edge endpoints. The remote client contracts rely on `@ratio1/edge-sdk-ts` to speak to R1FS and CStore — adjust inside `src/lib/ratio1` if your deployment varies.
 
 ---

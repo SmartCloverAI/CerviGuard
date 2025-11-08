@@ -1,0 +1,8 @@
+# Repository Agent Guidelines
+
+- Version footer lives in `src/components/version-footer.tsx` as the `APP_VERSION` string following `vMAJOR.MINOR.BUILD`.
+- Treat **bug fixes / refactors** as build bumps – increment the third number only.
+- Treat **feature or UX additions** as minor bumps – increment the second number and reset the build segment to `0`.
+- **Never** change the major number unless the user explicitly asks for a breaking release.
+- Document the applied bump in your summary so reviewers can see why the version changed.
+- If a change mixes features and fixes, ask which bump they prefer before editing `APP_VERSION`.
