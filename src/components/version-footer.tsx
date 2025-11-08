@@ -1,4 +1,4 @@
-const APP_VERSION = "CerviGuard v0.3.2";
+const APP_VERSION = "CerviGuard v0.3.3";
 
 export default function VersionFooter() {
   return (
