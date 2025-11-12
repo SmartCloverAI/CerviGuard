@@ -42,6 +42,7 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
     }
+    console.error("[POST /api/users] Error creating user:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create user" },
       { status: 400 },
