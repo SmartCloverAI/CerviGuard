@@ -21,6 +21,12 @@ function parseChainStorePeers(value: string | undefined): string[] {
   }
 }
 
+// Determine mock mode
+const mockFlag = env.USE_RATIO1_MOCK ?? env.USE_DECENTRALIZED_MOCK;
+export const USE_MOCK_RATIO1 = mockFlag
+  ? mockFlag === "true"
+  : process.env.NODE_ENV !== "production";
+
 // Main configuration object matching ratio1-drive pattern
 export const config = {
   // App-specific settings

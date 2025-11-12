@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getCurrentAuthenticatedUser, getUserById } from "@/lib/services/userService";
+import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
 import { createCase, listCasesForUser, listCasesWithUsers } from "@/lib/services/caseService";
 
 const CreateCaseSchema = z.object({
@@ -46,11 +46,11 @@ export async function POST(request: Request) {
     notes: parsed.notes,
   });
 
-  const owner = await getUserById(created.userId);
+  const owner = await getUserByUsername(created.username);
   const responsePayload = {
     case: {
       ...created,
-      user: owner ? { id: owner.id, username: owner.username, role: owner.role } : undefined,
+      user: owner ? { username: owner.username, role: owner.role } : undefined,
     },
   };
 

@@ -10,7 +10,7 @@ export interface CaseResult {
 
 export interface CaseRecord {
   id: string;
-  userId: string;
+  username: string;
   imageCid: string;
   notes?: string;
   status: "processing" | "completed" | "error";

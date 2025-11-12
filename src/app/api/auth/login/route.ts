@@ -25,9 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const { passwordHash, ...publicUser } = user;
-    void passwordHash;
-    return NextResponse.json({ user: publicUser });
+    // User is already a PublicUser from the auth library (no sensitive data)
+    return NextResponse.json({ user });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });

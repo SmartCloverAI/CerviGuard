@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cid
     return NextResponse.json({ error: "Case does not own this CID" }, { status: 400 });
   }
 
-  if (user.role !== "admin" && record.userId !== user.id) {
+  if (user.role !== "admin" && record.username !== user.username) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
