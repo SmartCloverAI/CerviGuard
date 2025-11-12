@@ -26,6 +26,19 @@ export default function CreateUserForm() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
+
+        // Format validation errors nicely
+        if (body.details?.fieldErrors) {
+          const fieldErrors = body.details.fieldErrors;
+          const errorMessages = Object.entries(fieldErrors)
+            .map(([field, errors]) => {
+              const errorList = Array.isArray(errors) ? errors : [errors];
+              return `${field}: ${errorList.join(", ")}`;
+            })
+            .join("; ");
+          throw new Error(errorMessages);
+        }
+
         throw new Error(body.error ?? "Failed to create user");
       }
       await response.json();
