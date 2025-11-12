@@ -14,6 +14,7 @@ export default async function PlatformLayout({ children }: { children: ReactNode
     { label: "Dashboard", href: "/dashboard" },
     { label: "My Cases", href: "/cases" },
     { label: "Add Case", href: "/cases/new" },
+    { label: "Profile", href: "/profile" },
     ...(user.role === "admin" ? [{ label: "Admin", href: "/admin/users" }] : []),
   ];
 
