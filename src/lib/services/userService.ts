@@ -4,10 +4,12 @@ import {
   InvalidUsernameError,
   UserExistsError,
   type PublicUser,
+  createPasswordHasher,
 } from "@ratio1/cstore-auth-ts";
 import { getAuthClient, ensureAuthInitialized } from "../auth/cstore";
 import type { UserRole } from "../types";
 import { createSessionToken, getSessionUser } from "../auth/session";
+import { config } from "../config";
 
 export async function authenticateUser(username: string, password: string) {
   const authClient = getAuthClient();
@@ -111,4 +113,59 @@ export async function getCurrentAuthenticatedUser(): Promise<PublicUser<{ isActi
   }
 
   return user;
+}
+
+export async function resetUserPassword(username: string, newPassword: string) {
+  const authClient = getAuthClient();
+  await ensureAuthInitialized(authClient);
+
+  try {
+    // Validate the new password
+    if (!newPassword || newPassword.length < 8) {
+      throw new InvalidPasswordError("Password must be at least 8 characters long");
+    }
+
+    // Get the user first to verify they exist and get their current data
+    const user = await authClient.simple.getUser(username);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Access the internal CStore client to update the password directly
+    // This requires accessing private members, so we use type assertion
+    const client = (authClient as any).client;
+    const secret = config.auth.cstore.secret || "";
+
+    if (!secret) {
+      throw new Error("Auth secret not configured");
+    }
+
+    // Hash the new password
+    const hasher = createPasswordHasher();
+    const passwordRecord = await hasher.hashPassword(newPassword, secret);
+
+    // Get the current user record from CStore
+    const userKey = `user:${username}`;
+    const currentRecord = await client.get(userKey);
+
+    if (!currentRecord) {
+      throw new Error("User record not found in CStore");
+    }
+
+    // Parse and update the user record with the new password
+    const userRecord = JSON.parse(currentRecord);
+    userRecord.password = passwordRecord;
+    userRecord.updatedAt = new Date().toISOString();
+
+    // Write the updated record back to CStore
+    await client.put(userKey, JSON.stringify(userRecord));
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof InvalidUsernameError || error instanceof InvalidPasswordError) {
+      throw error;
+    }
+    console.error("Error resetting password:", error);
+    throw new Error(error instanceof Error ? error.message : "Failed to reset password");
+  }
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/contexts/toast-context";
+import ResetPasswordModal from "./reset-password-modal";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export default function EditUserModal({
   const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -160,6 +162,25 @@ export default function EditUserModal({
             </div>
           )}
 
+          <div className="border-t border-slate-200 pt-4">
+            <button
+              type="button"
+              onClick={() => setIsResetPasswordOpen(true)}
+              disabled={isSubmitting}
+              className="w-full rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition hover:bg-amber-100 disabled:opacity-50"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <span>Reset Password (Admin)</span>
+              </div>
+            </button>
+            <p className="mt-2 text-xs text-slate-500 text-center">
+              Reset user's password without requiring current password
+            </p>
+          </div>
+
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
@@ -178,6 +199,16 @@ export default function EditUserModal({
             </button>
           </div>
         </form>
+
+        <ResetPasswordModal
+          isOpen={isResetPasswordOpen}
+          onClose={() => setIsResetPasswordOpen(false)}
+          username={user.username}
+          onSuccess={() => {
+            setIsResetPasswordOpen(false);
+            handleClose();
+          }}
+        />
       </div>
     </div>
   );
