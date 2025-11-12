@@ -1,4 +1,4 @@
-const APP_VERSION = "CerviGuard v0.3.4";
+const APP_VERSION = `CerviGuard v${process.env.NEXT_PUBLIC_APP_VERSION || "0.1.0"}`;
 
 export default function VersionFooter() {
   return (
