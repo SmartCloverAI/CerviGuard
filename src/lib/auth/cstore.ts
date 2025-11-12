@@ -1,20 +1,22 @@
 import { CStoreAuth, resolveAuthEnv } from "@ratio1/cstore-auth-ts";
-import { CSTORE_AUTH_HKEY, CSTORE_AUTH_SECRET } from "../config";
+import { config } from "../config";
 
 const AUTH_OVERRIDES: Partial<Record<"hkey" | "secret", string>> = {};
 
-if (CSTORE_AUTH_HKEY) {
-  AUTH_OVERRIDES.hkey = CSTORE_AUTH_HKEY;
+if (config.auth.cstore.hkey) {
+  AUTH_OVERRIDES.hkey = config.auth.cstore.hkey;
 }
 
-if (CSTORE_AUTH_SECRET) {
-  AUTH_OVERRIDES.secret = CSTORE_AUTH_SECRET;
+if (config.auth.cstore.secret) {
+  AUTH_OVERRIDES.secret = config.auth.cstore.secret;
 }
 
 let authClient: CStoreAuth | null = null;
 let initPromise: Promise<void> | null = null;
 
 export function getAuthClient(): CStoreAuth {
+  console.log("#1111");
+  console.log(process.env);
   if (!authClient) {
     const resolved = resolveAuthEnv(AUTH_OVERRIDES, process.env);
     authClient = new CStoreAuth({

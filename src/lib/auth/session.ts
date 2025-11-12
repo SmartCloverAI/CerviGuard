@@ -1,13 +1,12 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import { SESSION_SECRET, TOKEN_TTL_SECONDS } from "../config";
+import { SESSION_SECRET, config } from "../config";
 import { SESSION_COOKIE } from "../constants";
-import type { PublicUser, UserRecord } from "../types";
+import type { UserRole } from "../types";
 
 export interface SessionPayload {
   sub: string;
-  username: string;
-  role: "admin" | "user";
+  role?: string;
   exp: number;
   iat: number;
 }
@@ -16,16 +15,15 @@ function getSecretKey() {
   return new TextEncoder().encode(SESSION_SECRET);
 }
 
-export async function createSessionToken(user: UserRecord | PublicUser) {
+export async function createSessionToken(payload: { sub: string; role?: UserRole }) {
   const iat = Math.floor(Date.now() / 1000);
-  const exp = iat + TOKEN_TTL_SECONDS;
+  const exp = iat + config.auth.sessionTtlSeconds;
 
   return new SignJWT({
-    username: user.username,
-    role: user.role,
+    role: payload.role,
   })
     .setProtectedHeader({ alg: "HS256" })
-    .setSubject(user.id)
+    .setSubject(payload.sub)
     .setIssuedAt(iat)
     .setExpirationTime(exp)
     .sign(getSecretKey());
@@ -66,7 +64,7 @@ export async function setSessionCookie(token: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: TOKEN_TTL_SECONDS,
+    maxAge: config.auth.sessionTtlSeconds,
   });
 }
 

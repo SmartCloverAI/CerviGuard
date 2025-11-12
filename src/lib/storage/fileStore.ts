@@ -2,18 +2,18 @@ import { mkdir, readFile, writeFile, access, readdir, rm } from "fs/promises";
 import { constants as fsConstants } from "fs";
 import path from "path";
 import { createHash } from "crypto";
-import { STORAGE_ROOT } from "../config";
+import { config } from "../config";
 
 async function ensureDir(dirPath: string) {
   await mkdir(dirPath, { recursive: true });
 }
 
 export async function ensureStorageRoot() {
-  await ensureDir(STORAGE_ROOT);
+  await ensureDir(config.STORAGE_ROOT);
 }
 
 function resolvePath(...segments: string[]) {
-  return path.join(STORAGE_ROOT, ...segments);
+  return path.join(config.STORAGE_ROOT, ...segments);
 }
 
 async function fileExists(filePath: string) {
