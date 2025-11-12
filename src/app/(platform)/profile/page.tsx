@@ -1,48 +1,12 @@
-"use client";
-
-import { useState } from "react";
 import { redirect } from "next/navigation";
-import ChangePasswordModal from "@/components/change-password-modal";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { format } from "date-fns";
+import { getCurrentAuthenticatedUser } from "@/lib/services/userService";
+import ProfileClient from "./profile-client";
 
-export default function ProfilePage() {
-  const router = useRouter();
-  const [username, setUsername] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Fetch current user info from session
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) {
-          setUsername(data.user.username);
-          setRole(data.user.role);
-        }
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setIsLoading(false);
-      });
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-teal-500 border-t-transparent mx-auto"></div>
-          <p className="text-slate-600">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!username) {
-    router.push("/login");
-    return null;
+export default async function ProfilePage() {
+  const user = await getCurrentAuthenticatedUser();
+  if (!user) {
+    redirect("/login");
   }
 
   return (
@@ -68,10 +32,10 @@ export default function ProfilePage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">{username}</h3>
+              <h3 className="text-2xl font-bold text-slate-900">{user.username}</h3>
               <div className="mt-1">
                 <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-teal-700 ring-1 ring-inset ring-teal-200">
-                  {role}
+                  {user.role}
                 </span>
               </div>
             </div>
@@ -85,7 +49,7 @@ export default function ProfilePage() {
                 </svg>
                 <span className="text-sm font-semibold">Username</span>
               </div>
-              <p className="text-lg font-medium text-slate-900">{username}</p>
+              <p className="text-lg font-medium text-slate-900">{user.username}</p>
             </div>
 
             <div className="rounded-lg bg-slate-50 p-4">
@@ -95,52 +59,38 @@ export default function ProfilePage() {
                 </svg>
                 <span className="text-sm font-semibold">Role</span>
               </div>
-              <p className="text-lg font-medium text-slate-900 capitalize">{role}</p>
+              <p className="text-lg font-medium text-slate-900 capitalize">{user.role}</p>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Security Card */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">Security Settings</h2>
-        </div>
-
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-start space-x-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-md">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            <div className="rounded-lg bg-slate-50 p-4">
+              <div className="flex items-center space-x-2 text-slate-600 mb-2">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
+                <span className="text-sm font-semibold">Member Since</span>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Password</h3>
-                <p className="text-sm text-slate-600 mt-1">
-                  Change your password to keep your account secure
-                </p>
-              </div>
+              <p className="text-lg font-medium text-slate-900">
+                {format(new Date(user.createdAt), "MMMM d, yyyy")}
+              </p>
             </div>
-            <button
-              onClick={() => setIsChangePasswordOpen(true)}
-              className="inline-flex items-center space-x-2"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
-              <span>Change Password</span>
-            </button>
+
+            <div className="rounded-lg bg-slate-50 p-4">
+              <div className="flex items-center space-x-2 text-slate-600 mb-2">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-semibold">Last Updated</span>
+              </div>
+              <p className="text-lg font-medium text-slate-900">
+                {format(new Date(user.updatedAt), "MMMM d, yyyy")}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Change Password Modal */}
-      <ChangePasswordModal
-        isOpen={isChangePasswordOpen}
-        onClose={() => setIsChangePasswordOpen(false)}
-        username={username}
-      />
+      {/* Security Card - Client Component */}
+      <ProfileClient username={user.username} />
     </div>
   );
 }
