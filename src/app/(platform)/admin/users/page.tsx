@@ -34,26 +34,29 @@ export default async function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-slate-800">{u.username}</td>
-                <td className="px-4 py-3 uppercase tracking-wide text-slate-500">{u.role}</td>
-                <td className="px-4 py-3 text-xs text-slate-500">
-                  {format(new Date(u.createdAt), "PPp")}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`badge ${
-                      u.isActive
-                        ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                        : "bg-slate-200 text-slate-500 ring-slate-300"
-                    }`}
-                  >
-                    {u.isActive ? "Active" : "Inactive"}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {users.map((u) => {
+              const isActive = u.metadata?.isActive ?? true;
+              return (
+                <tr key={u.username} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 font-medium text-slate-800">{u.username}</td>
+                  <td className="px-4 py-3 uppercase tracking-wide text-slate-500">{u.role}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500">
+                    {format(new Date(u.createdAt), "PPp")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`badge ${
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                          : "bg-slate-200 text-slate-500 ring-slate-300"
+                      }`}
+                    >
+                      {isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { config } from "../config";
+import { USE_MOCK_RATIO1, config } from "../config";
 import type { CaseRecord } from "../types";
 import { ensureStorageRoot, readJsonFile, writeJsonFile } from "../storage/fileStore";
 import { getEdgeSdk } from "./sdk";
@@ -8,7 +8,7 @@ export interface CStoreClient {
   createCase(record: CaseRecord): Promise<void>;
   updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord>;
   getCase(caseId: string): Promise<CaseRecord | null>;
-  listCasesForUser(userId: string): Promise<CaseRecord[]>;
+  listCasesForUser(username: string): Promise<CaseRecord[]>;
   listAllCases(): Promise<CaseRecord[]>;
 }
 
@@ -58,9 +58,9 @@ class LocalCStoreClient implements CStoreClient {
     return state.cases.find((record) => record.id === caseId) ?? null;
   }
 
-  async listCasesForUser(userId: string): Promise<CaseRecord[]> {
+  async listCasesForUser(username: string): Promise<CaseRecord[]> {
     const state = await this.loadState();
-    return state.cases.filter((record) => record.userId === userId);
+    return state.cases.filter((record) => record.username === username);
   }
 
   async listAllCases(): Promise<CaseRecord[]> {
@@ -121,8 +121,8 @@ class RemoteCStoreClient implements CStoreClient {
     return parseRecord<CaseRecord>(raw);
   }
 
-  async listCasesForUser(userId: string): Promise<CaseRecord[]> {
-    return (await this.listAllCases()).filter((record) => record.userId === userId);
+  async listCasesForUser(username: string): Promise<CaseRecord[]> {
+    return (await this.listAllCases()).filter((record) => record.username === username);
   }
 
   async listAllCases(): Promise<CaseRecord[]> {
@@ -139,8 +139,7 @@ let clientPromise: Promise<CStoreClient> | null = null;
 export function getCStoreClient(): Promise<CStoreClient> {
   if (!clientPromise) {
     clientPromise = (async () => {
-      // Use mock mode if no CStore API URL is configured
-      if (!config.cstoreApiUrl) {
+      if (USE_MOCK_RATIO1) {
         const localClient = new LocalCStoreClient();
         return localClient;
       }

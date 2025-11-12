@@ -1,34 +1,30 @@
 import { NextResponse, NextRequest } from "next/server";
-import { z } from "zod";
 import { getSessionUser } from "@/lib/auth/session";
-import { resetUserPassword } from "@/lib/services/userService";
 
-const ResetPasswordSchema = z.object({
-  newPassword: z.string().min(8),
-});
-
+/**
+ * Admin password reset endpoint
+ *
+ * NOTE: The @ratio1/cstore-auth-ts library does not support admin-initiated
+ * password resets without the current password. Users must change their own
+ * passwords using the changePassword method which requires the current password.
+ *
+ * This endpoint returns a 501 Not Implemented status to indicate that
+ * admin password resets are not available when using the auth library.
+ */
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ userId: string }> },
 ) {
-  const { userId } = await context.params;
   const session = await getSessionUser();
   if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  try {
-    const payload = await request.json();
-    const { newPassword } = ResetPasswordSchema.parse(payload);
-    const user = await resetUserPassword(userId, newPassword);
-    return NextResponse.json({ user });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
-    }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to reset password" },
-      { status: 400 },
-    );
-  }
+  return NextResponse.json(
+    {
+      error: "Admin password reset is not supported",
+      message: "Users must change their own passwords. The auth library requires the current password for security."
+    },
+    { status: 501 }
+  );
 }

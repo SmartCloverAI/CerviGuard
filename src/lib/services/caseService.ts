@@ -23,7 +23,7 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
 
   const caseRecord: CaseRecord = {
     id: generateId("case"),
-    userId: input.user.username, // Use username as userId
+    username: input.user.username,
     imageCid: cid,
     status: "processing",
     notes: input.notes,
@@ -67,6 +67,6 @@ export async function listCasesWithUsers(): Promise<CaseWithUser[]> {
   const mapped = new Map(users.map((user) => [user.username, user]));
   return cases.map((caseRecord) => ({
     ...caseRecord,
-    user: mapped.get(caseRecord.userId),
+    user: mapped.get(caseRecord.username),
   }));
 }
