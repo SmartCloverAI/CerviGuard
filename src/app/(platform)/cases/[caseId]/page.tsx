@@ -5,13 +5,14 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
 import { getCaseById } from "@/lib/services/caseService";
 
-export default async function CaseDetailPage({ params }: { params: { caseId: string } }) {
+export default async function CaseDetailPage({ params }: { params: Promise<{ caseId: string }> }) {
   const user = await getCurrentAuthenticatedUser();
   if (!user) {
     redirect("/login");
   }
 
-  const record = await getCaseById(params.caseId);
+  const { caseId } = await params;
+  const record = await getCaseById(caseId);
   if (!record) {
     notFound();
   }
