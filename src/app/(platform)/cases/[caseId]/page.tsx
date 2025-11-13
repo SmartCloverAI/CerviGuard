@@ -77,6 +77,34 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
             </dl>
           </div>
 
+          {record.result && (record.result.imageWidth || record.result.imageHeight || record.result.imageQuality) && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-slate-900">Image metadata</h2>
+              <dl className="mt-4 space-y-3 text-sm text-slate-600">
+                {record.result.imageWidth && record.result.imageHeight && (
+                  <div className="flex justify-between">
+                    <dt>Dimensions</dt>
+                    <dd className="font-mono">{record.result.imageWidth} × {record.result.imageHeight} px</dd>
+                  </div>
+                )}
+                {record.result.imageQuality && (
+                  <div className="flex justify-between">
+                    <dt>Image quality</dt>
+                    <dd className="capitalize">{record.result.imageQuality}</dd>
+                  </div>
+                )}
+                {record.result.imageQualitySufficient !== undefined && (
+                  <div className="flex justify-between">
+                    <dt>Quality sufficient</dt>
+                    <dd className={record.result.imageQualitySufficient ? "text-emerald-600" : "text-rose-600"}>
+                      {record.result.imageQualitySufficient ? "Yes" : "No"}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
+
           <div className="card">
             <h2 className="text-lg font-semibold text-slate-900">AI analysis</h2>
             {record.result ? (
