@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentAuthenticatedUser, getUserById } from "@/lib/services/userService";
+import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
 import { getCaseById } from "@/lib/services/caseService";
 
 export default async function CaseDetailPage({ params }: { params: { caseId: string } }) {
@@ -16,11 +16,11 @@ export default async function CaseDetailPage({ params }: { params: { caseId: str
     notFound();
   }
 
-  if (user.role !== "admin" && record.userId !== user.id) {
+  if (user.role !== "admin" && record.username !== user.username) {
     redirect("/cases");
   }
 
-  const owner = await getUserById(record.userId);
+  const owner = await getUserByUsername(record.username);
 
   return (
     <div className="space-y-6">
@@ -64,7 +64,7 @@ export default async function CaseDetailPage({ params }: { params: { caseId: str
               </div>
               <div className="flex justify-between">
                 <dt>Clinician</dt>
-                <dd>{owner ? owner.username : record.userId}</dd>
+                <dd>{owner ? owner.username : record.username}</dd>
               </div>
               {record.notes && (
                 <div>

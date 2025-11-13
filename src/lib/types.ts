@@ -1,23 +1,5 @@
+// Re-export user types from auth library
 export type UserRole = "admin" | "user";
-
-export interface UserRecord {
-  id: string;
-  username: string;
-  role: UserRole;
-  passwordHash: string | null;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-}
-
-export interface PublicUser {
-  id: string;
-  username: string;
-  role: UserRole;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-}
 
 export interface CaseResult {
   tzType: "Type 1" | "Type 2" | "Type 3";
@@ -28,7 +10,7 @@ export interface CaseResult {
 
 export interface CaseRecord {
   id: string;
-  userId: string;
+  username: string;
   imageCid: string;
   notes?: string;
   status: "processing" | "completed" | "error";
@@ -38,5 +20,9 @@ export interface CaseRecord {
 }
 
 export interface CaseWithUser extends CaseRecord {
-  user?: PublicUser;
+  user?: {
+    username: string;
+    role?: string;
+    createdAt?: string;
+  };
 }

@@ -1,4 +1,4 @@
-import { R1FS_ENDPOINT, USE_MOCK_RATIO1 } from "../config";
+import { USE_MOCK_RATIO1 } from "../config";
 import { readBinaryFile, storeBinaryFile } from "../storage/fileStore";
 import path from "path";
 import { getEdgeSdk } from "./sdk";
@@ -82,9 +82,6 @@ export function getR1FSClient(): Promise<R1FSClient> {
     clientPromise = (async () => {
       if (USE_MOCK_RATIO1) {
         return new LocalR1FSClient();
-      }
-      if (!R1FS_ENDPOINT) {
-        throw new Error("R1FS_API_URL must be defined when mock mode is disabled.");
       }
       return new RemoteR1FSClient();
     })();

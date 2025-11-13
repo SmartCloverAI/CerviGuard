@@ -67,7 +67,7 @@ export default async function CasesPage() {
                     <td className="px-4 py-3 text-xs">
                       {isCaseWithUser(record) && record.user
                         ? record.user.username
-                        : record.userId}
+                        : record.username}
                     </td>
                   )}
                   <td className="px-4 py-3 text-xs text-slate-500">
