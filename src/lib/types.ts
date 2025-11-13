@@ -6,6 +6,10 @@ export interface CaseResult {
   lesionAssessment: "none" | "low" | "moderate" | "high";
   lesionSummary: string;
   riskScore: number;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageQuality?: string;
+  imageQualitySufficient?: boolean;
 }
 
 export interface CaseRecord {

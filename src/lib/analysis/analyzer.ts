@@ -26,10 +26,21 @@ export function runCervicalAnalysis(buffer: Buffer): CaseResult {
           ? "Patterns consistent with moderate risk lesion. Recommend colposcopic evaluation."
           : "High-likelihood lesion detected. Prioritize urgent review and possible biopsy.";
 
+  // Mock image dimensions and quality
+  const imageWidth = 1024 + (digest[3] % 512);
+  const imageHeight = 768 + (digest[4] % 384);
+  const qualityOptions = ["excellent", "good", "fair", "poor", "unknown"];
+  const imageQuality = qualityOptions[digest[5] % qualityOptions.length];
+  const imageQualitySufficient = digest[6] > 50; // ~80% chance of sufficient quality
+
   return {
     tzType,
     lesionAssessment,
     lesionSummary,
     riskScore,
+    imageWidth,
+    imageHeight,
+    imageQuality,
+    imageQualitySufficient,
   };
 }
