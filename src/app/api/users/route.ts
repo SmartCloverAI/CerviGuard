@@ -1,12 +1,26 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth/session";
-import { createUserAccount, listUsers } from "@/lib/services/userService";
+import { createUserAccount, listUsers, changeUserPassword, updateUser } from "@/lib/services/userService";
 
 const CreateUserSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(8),
   role: z.enum(["admin", "user"]).default("user"),
+});
+
+const ChangePasswordSchema = z.object({
+  username: z.string().min(3),
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+const UpdateUserSchema = z.object({
+  username: z.string().min(3),
+  role: z.enum(["admin", "user"]).optional(),
+  metadata: z.object({
+    isActive: z.boolean().optional(),
+  }).optional(),
 });
 
 async function ensureAdmin() {
@@ -42,8 +56,70 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
     }
+    console.error("[POST /api/users] Error creating user:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create user" },
+      { status: 400 },
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  const session = await getSessionUser();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const payload = await request.json();
+    const parsed = ChangePasswordSchema.parse(payload);
+
+    // Users can only change their own password unless they're admin
+    if (session.role !== "admin" && session.sub !== parsed.username) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await changeUserPassword(parsed.username, parsed.currentPassword, parsed.newPassword);
+    return NextResponse.json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
+    }
+    console.error("[PUT /api/users] Error changing password:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to change password" },
+      { status: 400 },
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  const session = await ensureAdmin();
+  if (!session) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const payload = await request.json();
+    const parsed = UpdateUserSchema.parse(payload);
+
+    const updates: { role?: "admin" | "user"; metadata?: { isActive?: boolean } } = {};
+    if (parsed.role) {
+      updates.role = parsed.role;
+    }
+    if (parsed.metadata) {
+      updates.metadata = parsed.metadata;
+    }
+
+    const updatedUser = await updateUser(parsed.username, updates);
+    return NextResponse.json({ success: true, user: updatedUser });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid input", details: error.flatten() }, { status: 400 });
+    }
+    console.error("[PATCH /api/users] Error updating user:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to update user" },
       { status: 400 },
     );
   }

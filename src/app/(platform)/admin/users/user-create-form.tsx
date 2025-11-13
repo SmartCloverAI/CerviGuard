@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/contexts/toast-context";
 
 export default function CreateUserForm() {
   const [username, setUsername] = useState("");
@@ -8,6 +9,7 @@ export default function CreateUserForm() {
   const [role, setRole] = useState<"admin" | "user">("user");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setSaving] = useState(false);
+  const { success } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -26,9 +28,23 @@ export default function CreateUserForm() {
       });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
+
+        // Format validation errors nicely
+        if (body.details?.fieldErrors) {
+          const fieldErrors = body.details.fieldErrors;
+          const errorMessages = Object.entries(fieldErrors)
+            .map(([field, errors]) => {
+              const errorList = Array.isArray(errors) ? errors : [errors];
+              return `${field}: ${errorList.join(", ")}`;
+            })
+            .join("; ");
+          throw new Error(errorMessages);
+        }
+
         throw new Error(body.error ?? "Failed to create user");
       }
       await response.json();
+      success(`User "${username}" created successfully`);
       setUsername("");
       setPassword("");
       setRole("user");

@@ -3,6 +3,8 @@ import "./globals.css";
 import GitHubLink from "@/components/github-link";
 import ServedBy from "@/components/served-by";
 import VersionFooter from "@/components/version-footer";
+import { ToastProvider } from "@/contexts/toast-context";
+import { ToastContainer } from "@/components/toast";
 
 export const metadata: Metadata = {
   title: "SmartClover CerviGuard Pilot",
@@ -25,10 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <ServedBy hostId={hostId} />
-        <VersionFooter />
-        <GitHubLink />
+        <ToastProvider>
+          {children}
+          <ToastContainer />
+          <ServedBy hostId={hostId} />
+          <VersionFooter />
+          <GitHubLink />
+        </ToastProvider>
       </body>
     </html>
   );
