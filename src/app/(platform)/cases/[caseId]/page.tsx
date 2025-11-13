@@ -39,6 +39,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
               fill
               sizes="(max-width: 768px) 100vw, 640px"
               className="object-contain"
+              unoptimized
             />
           </div>
           <p className="mt-3 text-xs text-slate-500">
