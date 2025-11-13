@@ -1,7 +1,5 @@
-import { randomUUID } from "crypto";
-import { USE_MOCK_RATIO1, config } from "../config";
+import { config } from "../config";
 import type { CaseRecord } from "../types";
-import { ensureStorageRoot, readJsonFile, writeJsonFile } from "../storage/fileStore";
 import { getEdgeSdk } from "./sdk";
 
 export interface CStoreClient {
@@ -10,63 +8,6 @@ export interface CStoreClient {
   getCase(caseId: string): Promise<CaseRecord | null>;
   listCasesForUser(username: string): Promise<CaseRecord[]>;
   listAllCases(): Promise<CaseRecord[]>;
-}
-
-interface PersistedState {
-  cases: CaseRecord[];
-}
-
-const STATE_FILE = "cstore.json";
-
-class LocalCStoreClient implements CStoreClient {
-  private async loadState(): Promise<PersistedState> {
-    await ensureStorageRoot();
-    const initial: PersistedState = {
-      cases: [],
-    };
-    return readJsonFile<PersistedState>(STATE_FILE, initial);
-  }
-
-  private async writeState(state: PersistedState) {
-    await writeJsonFile(STATE_FILE, state);
-  }
-
-  async createCase(record: CaseRecord): Promise<void> {
-    const state = await this.loadState();
-    state.cases.push(record);
-    await this.writeState(state);
-  }
-
-  async updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord> {
-    const state = await this.loadState();
-    const idx = state.cases.findIndex((c) => c.id === caseId);
-    if (idx === -1) {
-      throw new Error("Case not found");
-    }
-    const updated: CaseRecord = {
-      ...state.cases[idx],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    state.cases[idx] = updated;
-    await this.writeState(state);
-    return updated;
-  }
-
-  async getCase(caseId: string): Promise<CaseRecord | null> {
-    const state = await this.loadState();
-    return state.cases.find((record) => record.id === caseId) ?? null;
-  }
-
-  async listCasesForUser(username: string): Promise<CaseRecord[]> {
-    const state = await this.loadState();
-    return state.cases.filter((record) => record.username === username);
-  }
-
-  async listAllCases(): Promise<CaseRecord[]> {
-    const state = await this.loadState();
-    return state.cases;
-  }
 }
 
 function parseRecord<T>(value: string | null): T | null {
@@ -117,6 +58,8 @@ class RemoteCStoreClient implements CStoreClient {
 
   async getCase(caseId: string): Promise<CaseRecord | null> {
     const sdk = await this.getSdk();
+    console.log('[cstore] getCase called with caseId:', caseId);
+    console.log('[cstore] hget params:', { hkey: config.CASES_HKEY, key: caseId });
     const raw = await sdk.cstore.hget({ hkey: config.CASES_HKEY, key: caseId });
     return parseRecord<CaseRecord>(raw);
   }
@@ -134,17 +77,11 @@ class RemoteCStoreClient implements CStoreClient {
   }
 }
 
-let clientPromise: Promise<CStoreClient> | null = null;
+let clientInstance: RemoteCStoreClient | null = null;
 
 export function getCStoreClient(): Promise<CStoreClient> {
-  if (!clientPromise) {
-    clientPromise = (async () => {
-      if (USE_MOCK_RATIO1) {
-        const localClient = new LocalCStoreClient();
-        return localClient;
-      }
-      return new RemoteCStoreClient();
-    })();
+  if (!clientInstance) {
+    clientInstance = new RemoteCStoreClient();
   }
-  return clientPromise;
+  return Promise.resolve(clientInstance);
 }

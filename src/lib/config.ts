@@ -21,20 +21,11 @@ function parseChainStorePeers(value: string | undefined): string[] {
   }
 }
 
-// Determine mock mode
-const mockFlag = env.USE_RATIO1_MOCK ?? env.USE_DECENTRALIZED_MOCK;
-export const USE_MOCK_RATIO1 = mockFlag
-  ? mockFlag === "true"
-  : process.env.NODE_ENV !== "production";
-
 // Main configuration object matching ratio1-drive pattern
 export const config = {
   // App-specific settings
   CASES_HKEY: env.CSTORE_CASES_HKEY ?? "cerviguard:cases",
   DEBUG: env.NODE_ENV === "development" || env.DEBUG === "true",
-
-  // Storage configuration
-  STORAGE_ROOT: env.LOCAL_STATE_DIR ?? `${process.cwd()}/.ratio1-local-state`,
 
   // Edge network settings
   cstoreApiUrl: normalizeUrl(env.EE_CHAINSTORE_API_URL ?? env.CHAINSTORE_API_URL),
