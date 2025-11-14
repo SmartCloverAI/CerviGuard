@@ -48,7 +48,7 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
       bufferSize: input.buffer.length,
     });
 
-    const result = runCervicalAnalysis(input.buffer);
+    const result = await runCervicalAnalysis(input.buffer);
 
     console.log(`[caseService] Analysis completed for case ${caseRecord.id}`);
     console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
