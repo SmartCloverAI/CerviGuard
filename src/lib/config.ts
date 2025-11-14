@@ -42,6 +42,13 @@ export const config = {
       bootstrapAdminPassword: env.EE_CSTORE_BOOTSTRAP_ADMIN_PASS ?? null,
     },
   },
+
+  // CerviGuard Analysis API configuration
+  cerviguardApi: {
+    baseUrl: env.CERVIGUARD_API_URL ?? "http://localhost:5082",
+    timeout: Number(env.CERVIGUARD_API_TIMEOUT ?? 250000), // 250 seconds default
+    debug: env.CERVIGUARD_API_DEBUG === "true",
+  },
 };
 
 // Session secret (kept for compatibility)
