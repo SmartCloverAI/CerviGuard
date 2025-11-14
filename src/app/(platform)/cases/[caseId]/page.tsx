@@ -12,16 +12,43 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
   }
 
   const { caseId } = await params;
-  const record = await getCaseById(caseId);
-  if (!record) {
-    notFound();
+
+  let record;
+  let owner;
+  let serviceError = false;
+
+  try {
+    record = await getCaseById(caseId);
+    if (!record) {
+      notFound();
+    }
+
+    if (user.role !== "admin" && record.username !== user.username) {
+      redirect("/cases");
+    }
+
+    owner = await getUserByUsername(record.username);
+  } catch (error) {
+    console.error("[CaseDetailPage] Failed to fetch case:", error instanceof Error ? error.message : error);
+    serviceError = true;
   }
 
-  if (user.role !== "admin" && record.username !== user.username) {
-    redirect("/cases");
+  if (serviceError || !record) {
+    return (
+      <div className="space-y-6">
+        <Link href="/cases" className="text-sm text-teal-600 hover:text-teal-800">
+          ← Back to cases
+        </Link>
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6">
+          <h2 className="text-lg font-semibold text-rose-800">Unable to Load Case</h2>
+          <p className="mt-2 text-sm text-rose-700">
+            The case details could not be retrieved. This may be because backend services are unavailable.
+            Please try again later or contact your administrator.
+          </p>
+        </div>
+      </div>
+    );
   }
-
-  const owner = await getUserByUsername(record.username);
 
   return (
     <div className="space-y-6">
@@ -85,6 +112,18 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
                   <div className="flex justify-between">
                     <dt>Dimensions</dt>
                     <dd className="font-mono">{record.result.imageWidth} × {record.result.imageHeight} px</dd>
+                  </div>
+                )}
+                {record.result.imageSizeMb && (
+                  <div className="flex justify-between">
+                    <dt>File size</dt>
+                    <dd className="font-mono">{record.result.imageSizeMb} MB</dd>
+                  </div>
+                )}
+                {record.result.imageChannels && (
+                  <div className="flex justify-between">
+                    <dt>Color channels</dt>
+                    <dd>{record.result.imageChannels === 3 ? "RGB" : record.result.imageChannels === 1 ? "Grayscale" : record.result.imageChannels}</dd>
                   </div>
                 )}
                 {record.result.imageQuality && (
