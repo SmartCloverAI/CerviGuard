@@ -40,13 +40,32 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   await cstore.createCase(caseRecord);
 
   try {
+    console.log(`[caseService] Starting analysis for case ${caseRecord.id}`);
+    console.log(`[caseService] Image details:`, {
+      cid: uploadResult.cid,
+      filename: input.filename,
+      mimeType: input.mimeType,
+      bufferSize: input.buffer.length,
+    });
+
     const result = runCervicalAnalysis(input.buffer);
+
+    console.log(`[caseService] Analysis completed for case ${caseRecord.id}`);
+    console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
+
     const completed = await cstore.updateCase(caseRecord.id, {
       status: "completed",
       result,
     });
     return completed;
   } catch (error) {
+    console.error(`[caseService] Analysis failed for case ${caseRecord.id}:`, error);
+    console.error(`[caseService] Error details:`, {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     await cstore.updateCase(caseRecord.id, {
       status: "error",
     });
