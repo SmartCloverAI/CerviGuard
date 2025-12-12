@@ -12,12 +12,32 @@ export const metadata: Metadata = {
     "Secure pilot console for SmartClover's cervical screening workflow, powered by decentralized, secure and privacy-oriented technology.",
 };
 
+const parseChainstorePeers = (value?: string) => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 const hostId =
   process.env.EE_HOST_ID ??
   process.env.NEXT_PUBLIC_EE_HOST_ID ??
   process.env.RATIO1_HOST_ID ??
   process.env.NEXT_PUBLIC_RATIO1_HOST_ID ??
   "unknown";
+
+const chainstorePeersRaw =
+  process.env.R1EN_CHAINSTORE_PEERS ??
+  process.env.NEXT_PUBLIC_R1EN_CHAINSTORE_PEERS ??
+  process.env.EE_CHAINSTORE_PEERS ??
+  process.env.NEXT_PUBLIC_EE_CHAINSTORE_PEERS ??
+  process.env.CHAINSTORE_PEERS ??
+  process.env.NEXT_PUBLIC_CHAINSTORE_PEERS;
+
+const edgeNodeCount = parseChainstorePeers(chainstorePeersRaw).length + 1;
 
 export default function RootLayout({
   children,
@@ -30,7 +50,7 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <ToastContainer />
-          <ServedBy hostId={hostId} />
+          <ServedBy hostId={hostId} edgeNodeCount={edgeNodeCount} />
           <VersionFooter />
           <GitHubLink />
         </ToastProvider>
