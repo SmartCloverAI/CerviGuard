@@ -16,15 +16,21 @@ export interface CreateCaseInput {
 
 export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   const cstore = await getCStoreClient();
-  const r1fs = await getR1FSClient();
+  const r1fs = getR1FSClient();
 
-  const { cid } = await r1fs.store(input.buffer, input.filename, input.mimeType);
+  // Store image in R1FS using base64 encoding
+  const base64 = input.buffer.toString("base64");
+  const uploadResult = await r1fs.addFileBase64({
+    file_base64_str: base64,
+    filename: input.filename,
+  });
+
   const now = new Date().toISOString();
 
   const caseRecord: CaseRecord = {
     id: generateId("case"),
     username: input.user.username,
-    imageCid: cid,
+    imageCid: uploadResult.cid,
     status: "processing",
     notes: input.notes,
     createdAt: now,
@@ -34,13 +40,32 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   await cstore.createCase(caseRecord);
 
   try {
-    const result = runCervicalAnalysis(input.buffer);
+    console.log(`[caseService] Starting analysis for case ${caseRecord.id}`);
+    console.log(`[caseService] Image details:`, {
+      cid: uploadResult.cid,
+      filename: input.filename,
+      mimeType: input.mimeType,
+      bufferSize: input.buffer.length,
+    });
+
+    const result = await runCervicalAnalysis(input.buffer);
+
+    console.log(`[caseService] Analysis completed for case ${caseRecord.id}`);
+    console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
+
     const completed = await cstore.updateCase(caseRecord.id, {
       status: "completed",
       result,
     });
     return completed;
   } catch (error) {
+    console.error(`[caseService] Analysis failed for case ${caseRecord.id}:`, error);
+    console.error(`[caseService] Error details:`, {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     await cstore.updateCase(caseRecord.id, {
       status: "error",
     });

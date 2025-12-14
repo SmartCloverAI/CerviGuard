@@ -15,11 +15,27 @@ export default async function CasesPage() {
     redirect("/login");
   }
 
-  const cases: (CaseRecord | CaseWithUser)[] =
-    user.role === "admin" ? await listCasesWithUsers() : await listCasesForUser(user);
+  let cases: (CaseRecord | CaseWithUser)[] = [];
+  let serviceError = false;
+
+  try {
+    cases = user.role === "admin" ? await listCasesWithUsers() : await listCasesForUser(user);
+  } catch (error) {
+    console.error("[CasesPage] Failed to fetch cases:", error instanceof Error ? error.message : error);
+    serviceError = true;
+  }
 
   return (
     <div className="space-y-6">
+      {serviceError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <h3 className="text-sm font-semibold text-rose-800">Services Unavailable</h3>
+          <p className="mt-1 text-sm text-rose-700">
+            Unable to connect to backend services. Cases cannot be loaded at this time.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Case history</h1>

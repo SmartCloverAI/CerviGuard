@@ -1,6 +1,5 @@
 import { CStoreAuth, resolveAuthEnv } from "@ratio1/cstore-auth-ts";
-import { config, USE_MOCK_RATIO1 } from "../config";
-import { MockCStoreClient } from "./mockCStoreClient";
+import { config } from "../config";
 
 const AUTH_OVERRIDES: Partial<Record<"hkey" | "secret", string>> = {};
 
@@ -23,13 +22,7 @@ export function getAuthClient(): CStoreAuth {
       hkey: resolved.hkey,
       secret: resolved.secret,
       logger: console,
-      // Use mock CStore client when USE_RATIO1_MOCK is true
-      ...(USE_MOCK_RATIO1 ? { cstoreClient: new MockCStoreClient() as any } : {}),
     });
-
-    if (USE_MOCK_RATIO1) {
-      console.log('[auth] Using mock CStore client (USE_RATIO1_MOCK=true)');
-    }
   }
   return authClient;
 }
