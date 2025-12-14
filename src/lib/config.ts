@@ -21,20 +21,11 @@ function parseChainStorePeers(value: string | undefined): string[] {
   }
 }
 
-// Determine mock mode
-const mockFlag = env.USE_RATIO1_MOCK ?? env.USE_DECENTRALIZED_MOCK;
-export const USE_MOCK_RATIO1 = mockFlag
-  ? mockFlag === "true"
-  : process.env.NODE_ENV !== "production";
-
 // Main configuration object matching ratio1-drive pattern
 export const config = {
   // App-specific settings
   CASES_HKEY: env.CSTORE_CASES_HKEY ?? "cerviguard:cases",
   DEBUG: env.NODE_ENV === "development" || env.DEBUG === "true",
-
-  // Storage configuration
-  STORAGE_ROOT: env.LOCAL_STATE_DIR ?? `${process.cwd()}/.ratio1-local-state`,
 
   // Edge network settings
   cstoreApiUrl: normalizeUrl(env.EE_CHAINSTORE_API_URL ?? env.CHAINSTORE_API_URL),
@@ -50,6 +41,13 @@ export const config = {
       secret: env.EE_CSTORE_AUTH_SECRET ?? undefined,
       bootstrapAdminPassword: env.EE_CSTORE_BOOTSTRAP_ADMIN_PASS ?? null,
     },
+  },
+
+  // CerviGuard Analysis API configuration
+  cerviguardApi: {
+    baseUrl: `http://${env.R1EN_HOST_IP ?? "localhost"}:${env.API_PORT ?? "5082"}`,
+    timeout: Number(env.CERVIGUARD_API_TIMEOUT ?? 250000), // 250 seconds default
+    debug: env.CERVIGUARD_API_DEBUG === "true",
   },
 };
 

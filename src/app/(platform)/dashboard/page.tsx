@@ -9,7 +9,17 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/login");
   }
-  const cases = await listCasesForUser(user);
+
+  let cases: Awaited<ReturnType<typeof listCasesForUser>> = [];
+  let serviceError = false;
+
+  try {
+    cases = await listCasesForUser(user);
+  } catch (error) {
+    console.error("[Dashboard] Failed to fetch cases:", error instanceof Error ? error.message : error);
+    serviceError = true;
+  }
+
   const totalCases = cases.length;
   const completedCases = cases.filter((record) => record.status === "completed").length;
   const inProgressCases = cases.filter((record) => record.status === "processing").length;
@@ -24,6 +34,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {serviceError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <h3 className="text-sm font-semibold text-rose-800">Services Unavailable</h3>
+          <p className="mt-1 text-sm text-rose-700">
+            Unable to connect to backend services. Please ensure CStore and R1FS are running, or contact your administrator.
+          </p>
+        </div>
+      )}
+
       <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         <div className="card">
           <p className="text-sm font-medium text-slate-500">Total Cases</p>
