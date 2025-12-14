@@ -45,7 +45,7 @@ export const config = {
 
   // CerviGuard Analysis API configuration
   cerviguardApi: {
-    baseUrl: env.CERVIGUARD_API_URL ?? "http://localhost:5082",
+    baseUrl: `http://${env.R1EN_HOST_IP ?? "localhost"}:${env.API_PORT ?? "5082"}`,
     timeout: Number(env.CERVIGUARD_API_TIMEOUT ?? 250000), // 250 seconds default
     debug: env.CERVIGUARD_API_DEBUG === "true",
   },
