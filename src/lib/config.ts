@@ -21,11 +21,31 @@ function parseChainStorePeers(value: string | undefined): string[] {
   }
 }
 
+function parseBoolean(value: string | undefined, defaultValue = false): boolean {
+  if (value === undefined) return defaultValue;
+  return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+}
+
+const useMockBackend = parseBoolean(env.USE_RATIO1_MOCK, env.NODE_ENV !== "production");
+const localStateDir = env.LOCAL_STATE_DIR ?? ".ratio1-local-state";
+const defaultAdminUsername = env.DEFAULT_ADMIN_USERNAME ?? "admin";
+const defaultAdminPassword = env.DEFAULT_ADMIN_PASSWORD ?? "password";
+
 // Main configuration object matching ratio1-drive pattern
 export const config = {
   // App-specific settings
   CASES_HKEY: env.CSTORE_CASES_HKEY ?? "cerviguard:cases",
   DEBUG: env.NODE_ENV === "development" || env.DEBUG === "true",
+  useMocks: useMockBackend,
+  localStateDir,
+  mockAdmin: {
+    username: defaultAdminUsername,
+    password: defaultAdminPassword,
+  },
+  mockAuth: {
+    hkey: env.EE_CSTORE_AUTH_HKEY ?? env.CSTORE_USERS_HKEY ?? "cerviguard:users",
+    secret: env.MOCK_AUTH_SECRET ?? env.EE_CSTORE_AUTH_SECRET ?? "cerviguard-mock-secret",
+  },
 
   // Edge network settings
   cstoreApiUrl: normalizeUrl(env.EE_CHAINSTORE_API_URL ?? env.CHAINSTORE_API_URL),
@@ -39,7 +59,10 @@ export const config = {
     cstore: {
       hkey: env.EE_CSTORE_AUTH_HKEY ?? undefined,
       secret: env.EE_CSTORE_AUTH_SECRET ?? undefined,
-      bootstrapAdminPassword: env.EE_CSTORE_BOOTSTRAP_ADMIN_PASS ?? null,
+      bootstrapAdminPassword:
+        env.EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW ??
+        env.DEFAULT_ADMIN_PASSWORD ??
+        null,
     },
   },
 
