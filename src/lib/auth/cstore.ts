@@ -1,14 +1,16 @@
-import { CStoreAuth, resolveAuthEnv } from "@ratio1/cstore-auth-ts";
+import { join } from "path";
+import { CStoreAuth, resolveAuthEnv, type CStoreAuthOptions } from "@ratio1/cstore-auth-ts";
 import { config } from "../config";
+import { FileCStoreMock } from "./mock-cstore-client";
 
-const AUTH_OVERRIDES: Partial<Record<"hkey" | "secret", string>> = {};
+const BASE_AUTH_OVERRIDES: Partial<Record<"hkey" | "secret", string>> = {};
 
 if (config.auth.cstore.hkey) {
-  AUTH_OVERRIDES.hkey = config.auth.cstore.hkey;
+  BASE_AUTH_OVERRIDES.hkey = config.auth.cstore.hkey;
 }
 
 if (config.auth.cstore.secret) {
-  AUTH_OVERRIDES.secret = config.auth.cstore.secret;
+  BASE_AUTH_OVERRIDES.secret = config.auth.cstore.secret;
 }
 
 let authClient: CStoreAuth | null = null;
@@ -16,13 +18,31 @@ let initPromise: Promise<void> | null = null;
 
 export function getAuthClient(): CStoreAuth {
   if (!authClient) {
-    const resolved = resolveAuthEnv(AUTH_OVERRIDES, process.env);
+    const overrides = { ...BASE_AUTH_OVERRIDES };
 
-    authClient = new CStoreAuth({
+    if (config.useMocks) {
+      overrides.hkey ??= config.mockAuth.hkey;
+      overrides.secret ??= config.mockAuth.secret;
+
+      if (!process.env.EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW) {
+        process.env.EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW =
+          config.auth.cstore.bootstrapAdminPassword ?? config.mockAdmin.password;
+      }
+    }
+
+    const resolved = resolveAuthEnv(overrides, process.env);
+    const options: CStoreAuthOptions = {
       hkey: resolved.hkey,
       secret: resolved.secret,
       logger: console,
-    });
+    };
+
+    if (config.useMocks) {
+      const storePath = join(process.cwd(), config.localStateDir, "auth-store.json");
+      options.client = new FileCStoreMock(storePath);
+    }
+
+    authClient = new CStoreAuth(options);
   }
   return authClient;
 }

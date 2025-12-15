@@ -16,8 +16,8 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000) and sign in with the default mock admin seed:
 
-- **Username:** `demo`
-- **Password:** `demo`
+- **Username:** `admin`
+- **Password:** `password`
 
 You can change these defaults via environment variables (see below). All pilot data written while using the mock backend lives inside `.ratio1-local-state/`.
 
@@ -36,11 +36,11 @@ You can change these defaults via environment variables (see below). All pilot d
 | `R1EN_CHAINSTORE_PEERS` | Optional JSON array of peer URLs | `[]` |
 | `EE_CSTORE_AUTH_HKEY` | Hash key used by `@ratio1/cstore-auth-ts` | — |
 | `EE_CSTORE_AUTH_SECRET` | Pepper used by the auth layer | — |
-| `EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW` | One-time bootstrap admin password | — |
+| `EE_CSTORE_AUTH_BOOTSTRAP_ADMIN_PW` | One-time bootstrap admin password | `password` in mock mode |
 | `SESSION_SECRET` / `EE_SESSION_SECRET` / `EDGE_SESSION_SECRET` | Secret for signing session tokens | `demo-session-secret-change-me` *(fallback – TODO replace in prod)* |
 | `SESSION_MAX_AGE` | Session lifespan (seconds) | `28800` (8 hours) |
-| `DEFAULT_ADMIN_USERNAME` | Seed admin username (mock mode only) | `demo` |
-| `DEFAULT_ADMIN_PASSWORD` | Seed admin password (mock mode only) | `demo` |
+| `DEFAULT_ADMIN_USERNAME` | Seed admin username (mock mode only) | `admin` |
+| `DEFAULT_ADMIN_PASSWORD` | Seed admin password (mock mode only) | `password` |
 | `CSTORE_USERS_HKEY` | Hash key used for user records | `cerviguard:users` |
 | `CSTORE_USER_INDEX_HKEY` | Hash key used for username lookups | `cerviguard:usernames` |
 | `CSTORE_CASES_HKEY` | Hash key used for case records | `cerviguard:cases` |
@@ -96,6 +96,7 @@ src/
 
 - Jest or E2E tests are not yet wired for this pilot. When integrating into CI, consider adding API contract tests around `src/app/api`.
 - The mock clients hash uploaded bytes to create CIDs. Deleting `.ratio1-local-state` will clear local state.
+- Mock auth state is stored in `.ratio1-local-state/auth-store.json`; delete it to re-seed the default admin/password pair.
 - Switch between mocks and the edge gateway by flipping `USE_RATIO1_MOCK`; production containers should set it to `false` and provide the `R1EN_*` credentials.
 - When using the live edge network, provide the `EE_CSTORE_AUTH_*` variables so `@ratio1/cstore-auth-ts` can bootstrap authentication.
 - Admin-triggered password resets require the mock auth mode; in live mode, users must supply their current password via the auth API.
