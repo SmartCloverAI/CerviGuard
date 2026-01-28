@@ -103,10 +103,10 @@ export default async function CasesPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600">
-                    {record.result?.tzType ?? "—"}
+                    {record.result?.transformationZone?.topLabel ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600">
-                    {record.result?.lesionAssessment ?? "—"}
+                    {record.result?.lesion?.topLabel ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

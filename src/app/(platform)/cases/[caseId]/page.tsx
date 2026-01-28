@@ -104,88 +104,119 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
             </dl>
           </div>
 
-          {record.result && (record.result.imageWidth || record.result.imageHeight || record.result.imageQuality) && (
+          {record.result?.imageInfo && (
             <div className="card">
               <h2 className="text-lg font-semibold text-slate-900">Image metadata</h2>
               <dl className="mt-4 space-y-3 text-sm text-slate-600">
-                {record.result.imageWidth && record.result.imageHeight && (
-                  <div className="flex justify-between">
-                    <dt>Dimensions</dt>
-                    <dd className="font-mono">{record.result.imageWidth} × {record.result.imageHeight} px</dd>
-                  </div>
-                )}
-                {record.result.imageSizeMb && (
-                  <div className="flex justify-between">
-                    <dt>File size</dt>
-                    <dd className="font-mono">{record.result.imageSizeMb} MB</dd>
-                  </div>
-                )}
-                {record.result.imageChannels && (
-                  <div className="flex justify-between">
-                    <dt>Color channels</dt>
-                    <dd>{record.result.imageChannels === 3 ? "RGB" : record.result.imageChannels === 1 ? "Grayscale" : record.result.imageChannels}</dd>
-                  </div>
-                )}
-                {record.result.imageQuality && (
-                  <div className="flex justify-between">
-                    <dt>Image quality</dt>
-                    <dd className="capitalize">{record.result.imageQuality}</dd>
-                  </div>
-                )}
-                {record.result.imageQualitySufficient !== undefined && (
-                  <div className="flex justify-between">
-                    <dt>Quality sufficient</dt>
-                    <dd className={record.result.imageQualitySufficient ? "text-emerald-600" : "text-rose-600"}>
-                      {record.result.imageQualitySufficient ? "Yes" : "No"}
-                    </dd>
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <dt>Valid</dt>
+                  <dd className={record.result.imageInfo.valid ? "text-emerald-600" : "text-rose-600"}>
+                    {record.result.imageInfo.valid ? "Yes" : "No"}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Dimensions</dt>
+                  <dd className="font-mono">{record.result.imageInfo.width} × {record.result.imageInfo.height} px</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Color channels</dt>
+                  <dd>{record.result.imageInfo.channels === 3 ? "RGB" : record.result.imageInfo.channels === 1 ? "Grayscale" : record.result.imageInfo.channels}</dd>
+                </div>
               </dl>
             </div>
           )}
 
           <div className="card">
             <h2 className="text-lg font-semibold text-slate-900">AI analysis</h2>
-            {record.result ? (
-              <div className="mt-4 space-y-4 text-sm text-slate-600">
+            {record.result?.transformationZone && record.result?.lesion ? (
+              <div className="mt-4 space-y-6 text-sm text-slate-600">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                     Transformation Zone
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-slate-900">{record.result.tzType}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Lesion assessment
+                  <p className="mt-1 text-lg font-semibold text-slate-900">
+                    {record.result.transformationZone.topLabel}
                   </p>
-                  <p className="mt-1 text-base font-semibold capitalize text-rose-600">
-                    {record.result.lesionAssessment}
+                  <p className="text-xs text-slate-500">
+                    Confidence: {(record.result.transformationZone.topConfidence * 100).toFixed(1)}%
                   </p>
-                  <p className="mt-2 text-sm text-slate-600">{record.result.lesionSummary}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Risk score
-                  </p>
-                  <div className="mt-2 h-2 rounded-full bg-slate-200">
-                    <div
-                      className={`h-2 rounded-full ${
-                        record.result.riskScore >= 70
-                          ? "bg-rose-500"
-                          : record.result.riskScore >= 40
-                            ? "bg-amber-400"
-                            : "bg-emerald-500"
-                      }`}
-                      style={{ width: `${Math.min(record.result.riskScore, 100)}%` }}
-                    />
+                  <div className="mt-2 space-y-1">
+                    {record.result.transformationZone.predictions.map((pred) => (
+                      <div key={pred.classId} className="flex items-center gap-2">
+                        <span className="w-16 text-xs text-slate-500">{pred.label}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-slate-200">
+                          <div
+                            className="h-1.5 rounded-full bg-teal-500"
+                            style={{ width: `${pred.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="w-12 text-right text-xs text-slate-500">
+                          {(pred.confidence * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {record.result.riskScore} / 100 risk score derived from combined models.
-                  </p>
                 </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Lesion Classification
+                  </p>
+                  <p className={`mt-1 text-lg font-semibold ${
+                    record.result.lesion.topLabel === "Cancer"
+                      ? "text-rose-600"
+                      : record.result.lesion.topLabel === "HSIL"
+                        ? "text-orange-600"
+                        : record.result.lesion.topLabel === "LSIL"
+                          ? "text-amber-600"
+                          : "text-emerald-600"
+                  }`}>
+                    {record.result.lesion.topLabel}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Confidence: {(record.result.lesion.topConfidence * 100).toFixed(1)}%
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    {record.result.lesion.predictions.map((pred) => (
+                      <div key={pred.classId} className="flex items-center gap-2">
+                        <span className="w-16 text-xs text-slate-500">{pred.label}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-slate-200">
+                          <div
+                            className={`h-1.5 rounded-full ${
+                              pred.label === "Cancer"
+                                ? "bg-rose-500"
+                                : pred.label === "HSIL"
+                                  ? "bg-orange-500"
+                                  : pred.label === "LSIL"
+                                    ? "bg-amber-500"
+                                    : "bg-emerald-500"
+                            }`}
+                            style={{ width: `${pred.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="w-12 text-right text-xs text-slate-500">
+                          {(pred.confidence * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {record.result.processedAt && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <p className="text-xs text-slate-400">
+                      Processed at {new Date(record.result.processedAt * 1000).toLocaleString()}
+                      {record.result.processorVersion && ` · v${record.result.processorVersion}`}
+                    </p>
+                  </div>
+                )}
               </div>
+            ) : record.result ? (
+              <p className="mt-4 text-sm text-slate-500">
+                This case was analyzed with an older version. Please re-upload for updated results.
+              </p>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="mt-4 text-sm text-slate-500">
                 This case is still processing. Refresh the page or return in a few minutes.
               </p>
             )}

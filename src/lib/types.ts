@@ -1,18 +1,38 @@
 // Re-export user types from auth library
 export type UserRole = "admin" | "user";
 
+export type TzType = "Type 1" | "Type 2" | "Type 3";
+export type LesionLabel = "Normal" | "LSIL" | "HSIL" | "Cancer";
+
+export interface Prediction {
+  label: string;
+  confidence: number;
+  classId: number;
+}
+
+export interface ClassificationResult {
+  predictions: Prediction[];
+  topLabel: string;
+  topConfidence: number;
+}
+
+export interface ImageInfo {
+  valid: boolean;
+  width: number;
+  height: number;
+  channels: number;
+}
+
 export interface CaseResult {
-  tzType: "Type 1" | "Type 2" | "Type 3";
-  lesionAssessment: "none" | "low" | "moderate" | "high";
-  lesionSummary: string;
-  riskScore: number;
-  imageQuality?: string;
-  imageQualitySufficient?: boolean;
-  // Image info (from analysis.image_info)
-  imageWidth?: number;
-  imageHeight?: number;
-  imageChannels?: number;
-  imageSizeMb?: string;
+  // Analysis results
+  lesion: ClassificationResult;
+  transformationZone: ClassificationResult;
+  // Image info
+  imageInfo: ImageInfo;
+  // Metadata
+  requestId: string;
+  processedAt: number;
+  processorVersion: string;
 }
 
 export interface CaseRecord {

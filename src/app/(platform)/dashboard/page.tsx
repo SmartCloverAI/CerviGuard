@@ -28,9 +28,10 @@ export default async function DashboardPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
-  const highRiskCases = cases.filter(
-    (record) => record.result?.lesionAssessment === "high" || (record.result?.riskScore ?? 0) >= 70,
-  );
+  const highRiskCases = cases.filter((record) => {
+    const topLabel = record.result?.lesion?.topLabel;
+    return topLabel === "Cancer" || topLabel === "HSIL";
+  });
 
   return (
     <div className="space-y-8">
@@ -108,7 +109,7 @@ export default async function DashboardPage() {
                   </p>
                   {record.result && (
                     <p className="text-xs text-slate-500">
-                      TZ {record.result.tzType} · Lesion {record.result.lesionAssessment}
+                      TZ {record.result.transformationZone?.topLabel ?? "—"} · {record.result.lesion?.topLabel ?? "—"}
                     </p>
                   )}
                 </div>
