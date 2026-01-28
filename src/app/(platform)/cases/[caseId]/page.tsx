@@ -79,7 +79,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
             <dl className="mt-4 space-y-3 text-sm text-slate-600">
               <div className="flex justify-between">
                 <dt>Status</dt>
-                <dd className="badge">
+                <dd className={`badge ${record.status === "error" ? "bg-rose-100 text-rose-700" : ""}`}>
                   {record.status === "completed"
                     ? "Analysis complete"
                     : record.status === "processing"
@@ -106,14 +106,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
 
           {record.result?.imageInfo && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-slate-900">Image metadata</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Image file metadata</h2>
               <dl className="mt-4 space-y-3 text-sm text-slate-600">
-                <div className="flex justify-between">
-                  <dt>Valid</dt>
-                  <dd className={record.result.imageInfo.valid ? "text-emerald-600" : "text-rose-600"}>
-                    {record.result.imageInfo.valid ? "Yes" : "No"}
-                  </dd>
-                </div>
                 <div className="flex justify-between">
                   <dt>Dimensions</dt>
                   <dd className="font-mono">{record.result.imageInfo.width} × {record.result.imageInfo.height} px</dd>
@@ -128,7 +122,19 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
 
           <div className="card">
             <h2 className="text-lg font-semibold text-slate-900">AI analysis</h2>
-            {record.result?.transformationZone && record.result?.lesion ? (
+            {record.result?.status === "error" ? (
+              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+                <p className="font-medium text-rose-800">Image Validation Failed</p>
+                <p className="mt-2 text-sm text-rose-700">
+                  {record.result.errorMessage || record.result.error || "The uploaded image could not be analyzed."}
+                </p>
+                {record.result.processedAt && (
+                  <p className="mt-3 text-xs text-rose-500">
+                    Processed at {new Date(record.result.processedAt * 1000).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            ) : record.result?.transformationZone && record.result?.lesion ? (
               <div className="mt-4 space-y-6 text-sm text-slate-600">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-500">

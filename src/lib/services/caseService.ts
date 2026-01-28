@@ -53,6 +53,17 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
     console.log(`[caseService] Analysis completed for case ${caseRecord.id}`);
     console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
 
+    // Handle validation error from API - store error result and mark case as error
+    if (result.status === "error") {
+      console.log(`[caseService] Analysis returned error for case ${caseRecord.id}: ${result.errorMessage}`);
+
+      const errorCase = await cstore.updateCase(caseRecord.id, {
+        status: "error",
+        result,
+      });
+      return errorCase;
+    }
+
     const completed = await cstore.updateCase(caseRecord.id, {
       status: "completed",
       result,
@@ -66,9 +77,18 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    await cstore.updateCase(caseRecord.id, {
-      status: "error",
-    });
+    // Only update case to error status if it wasn't already deleted
+    try {
+      const existingCase = await cstore.getCase(caseRecord.id);
+      if (existingCase) {
+        await cstore.updateCase(caseRecord.id, {
+          status: "error",
+        });
+      }
+    } catch {
+      // Case was already deleted or doesn't exist
+    }
+
     throw error;
   }
 }

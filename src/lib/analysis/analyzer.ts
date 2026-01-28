@@ -27,7 +27,11 @@ interface CerviguardApiResponse {
       height: number;
       channels: number;
     };
+    // Error fields
     error?: string;
+    error_code?: string;
+    error_type?: string;
+    error_message?: string;
     processed_at: number;
     processor_version: string;
   };
@@ -50,6 +54,33 @@ function mapClassificationResult(apiResult: ApiClassificationResult): Classifica
 }
 
 function validateAndMapResponse(data: CerviguardApiResponse["result"]): CaseResult {
+  if (!data.image_info) {
+    throw new Error("API did not return image info");
+  }
+
+  const imageInfo: ImageInfo = {
+    valid: data.image_info.valid,
+    width: data.image_info.width,
+    height: data.image_info.height,
+    channels: data.image_info.channels,
+  };
+
+  // Handle error response
+  if (data.status === "error") {
+    return {
+      status: "error",
+      imageInfo,
+      requestId: data.request_id,
+      processedAt: data.processed_at,
+      processorVersion: data.processor_version,
+      error: data.error,
+      errorCode: data.error_code,
+      errorType: data.error_type,
+      errorMessage: data.error_message,
+    };
+  }
+
+  // Handle success response
   if (!data.analysis) {
     throw new Error("API did not return analysis data");
   }
@@ -64,18 +95,8 @@ function validateAndMapResponse(data: CerviguardApiResponse["result"]): CaseResu
     throw new Error("API did not return transformation zone predictions");
   }
 
-  if (!data.image_info) {
-    throw new Error("API did not return image info");
-  }
-
-  const imageInfo: ImageInfo = {
-    valid: data.image_info.valid,
-    width: data.image_info.width,
-    height: data.image_info.height,
-    channels: data.image_info.channels,
-  };
-
   return {
+    status: "completed",
     lesion: mapClassificationResult(data.analysis.lesion),
     transformationZone: mapClassificationResult(data.analysis.transformation_zone),
     imageInfo,
@@ -121,10 +142,6 @@ export async function runCervicalAnalysis(buffer: Buffer): Promise<CaseResult> {
 
     const data = (await response.json()) as CerviguardApiResponse;
     console.log('[analyzer] API response:', JSON.stringify(data, null, 2));
-
-    if (data.result.status === "error") {
-      throw new Error(data.result.error || "Unknown API error");
-    }
 
     const result = validateAndMapResponse(data.result);
     console.log('[analyzer] Mapped result:', result);

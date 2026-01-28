@@ -108,8 +108,10 @@ export default async function DashboardPage() {
                     {record.status.toUpperCase()}
                   </p>
                   {record.result && (
-                    <p className="text-xs text-slate-500">
-                      TZ {record.result.transformationZone?.topLabel ?? "—"} · {record.result.lesion?.topLabel ?? "—"}
+                    <p className={`text-xs ${record.result.status === "error" ? "text-rose-500" : "text-slate-500"}`}>
+                      {record.result.status === "error"
+                        ? "Validation failed"
+                        : `TZ ${record.result.transformationZone?.topLabel ?? "—"} · ${record.result.lesion?.topLabel ?? "—"}`}
                     </p>
                   )}
                 </div>
