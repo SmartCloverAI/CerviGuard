@@ -11,6 +11,114 @@
 | Validare | Zod |
 | SDK | @ratio1/edge-sdk-ts, @ratio1/cstore-auth-ts |
 
+## Arhitectura Sistemului CerviGuard
+
+### Descriere Generală
+
+CerviGuard este construit pe o arhitectură modernă pe trei niveluri, optimizată pentru procesare locală și securitate maximă a datelor medicale.
+
+**Nivelul de Prezentare** este implementat folosind Next.js 16 cu React 19, oferind o interfață web responsivă pentru clinicieni și administratori. Componentele principale includ formularul de autentificare, dashboard-ul cu statistici, modulul de încărcare și vizualizare cazuri, precum și panoul de administrare pentru gestionarea utilizatorilor.
+
+**Nivelul de Business Logic** este gestionat prin API Routes din Next.js, care expun endpoint-uri REST pentru autentificare, gestiunea cazurilor și administrarea utilizatorilor. Acest nivel include un strat de servicii (userService și caseService) care orchestrează operațiile CRUD, validarea datelor prin Zod și comunicarea cu sistemele externe.
+
+**Nivelul de Date și Inferență** este împărțit în două componente distincte:
+- **Stocare Distribuită (Ratio1 SDK)**: Imaginile medicale sunt stocate criptat în R1FS folosind adresare bazată pe conținut (CID), iar metadatele cazurilor și utilizatorilor sunt persistate în CStore, un registru distribuit securizat.
+- **Server de Inferență On-Edge**: Analiza AI a imaginilor cervicale se realizează local, prin apeluri HTTP către un server de inferență ce rulează pe portul 5082. Această abordare edge computing asigură că datele sensibile nu părăsesc infrastructura locală, respectând cerințele de confidențialitate medicală.
+
+Comunicarea între niveluri se face prin HTTPS pentru traficul extern și HTTP local pentru inferența on-edge. Autentificarea utilizează token-uri JWT stocate în cookie-uri httpOnly, asigurând protecție împotriva atacurilor XSS.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              UTILIZATOR                                      │
+│                         (Browser Web / Clinician)                            │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │ HTTPS
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         FRONTEND (Next.js 16)                                │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   Login     │  │  Dashboard  │  │   Cazuri    │  │  Admin Panel        │ │
+│  │   Form      │  │  Stats      │  │  Upload/View│  │  (Utilizatori)      │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │ API Routes
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         BACKEND (Next.js API Routes)                         │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────┐  │
+│  │  /api/auth/*    │  │  /api/cases/*   │  │  /api/users/*               │  │
+│  │  (JWT Sessions) │  │  (CRUD + Analiză)│  │  (Gestionare utilizatori)   │  │
+│  └────────┬────────┘  └────────┬────────┘  └─────────────┬───────────────┘  │
+│           │                    │                         │                   │
+│           ▼                    ▼                         ▼                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                      SERVICES LAYER                                      ││
+│  │   userService.ts (Auth, CRUD)  │  caseService.ts (Cazuri, Orchestrare)  ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+└───────────────┬─────────────────────────────────┬───────────────────────────┘
+                │                                 │
+                ▼                                 ▼
+┌───────────────────────────────┐   ┌─────────────────────────────────────────┐
+│      STOCARE DISTRIBUITĂ      │   │       SERVER INFERENȚĂ LOCAL            │
+│         (Ratio1 SDK)          │   │            (On-Edge)                    │
+│  ┌─────────────────────────┐  │   │  ┌─────────────────────────────────┐   │
+│  │        R1FS             │  │   │  │     POST /predict               │   │
+│  │  (Imagini criptate)     │  │   │  │     (Analiză AI cervicală)      │   │
+│  │  - Content-addressed    │  │   │  │                                 │   │
+│  │  - Identificare CID     │  │   │  │  Input: Base64 image            │   │
+│  └─────────────────────────┘  │   │  │  Output:                        │   │
+│  ┌─────────────────────────┐  │   │  │   - Tip Zonă Transformare       │   │
+│  │       CStore            │  │   │  │   - Evaluare leziuni            │   │
+│  │  (Metadate distribuite) │  │   │  │   - Scor risc (0-100)           │   │
+│  │  - cerviguard:cases     │  │   │  │   - Calitate imagine            │   │
+│  │  - cerviguard:users     │  │   │  └─────────────────────────────────┘   │
+│  │  - cerviguard:auth      │  │   │           http://localhost:5082        │
+│  └─────────────────────────┘  │   └─────────────────────────────────────────┘
+└───────────────────────────────┘
+```
+
+### Fluxul Principal de Date
+
+```
+1. AUTENTIFICARE
+   Utilizator → Login Form → /api/auth/login → CStore Auth → JWT Cookie
+
+2. ÎNCĂRCARE CAZ
+   Clinician → Upload Form → /api/cases (POST)
+                                   │
+                                   ├─► R1FS: Stocare imagine criptată → CID
+                                   │
+                                   └─► CStore: Creare înregistrare caz (status: processing)
+
+3. ANALIZĂ AI
+   caseService → analyzer.ts → POST /predict (localhost:5082)
+                                      │
+                                      ▼
+                               Server Inferență Edge
+                                      │
+                                      ▼
+                               Rezultate Analiză
+                                      │
+                                      ▼
+                               CStore: Update caz (status: completed, result: {...})
+
+4. VIZUALIZARE REZULTATE
+   Clinician → /cases/[id] → /api/cases/[id] (GET) → CStore: Read caz
+                                                            │
+                           Dashboard ◄─── Rezultate ◄───────┘
+```
+
+### Componente Principale
+
+| Componentă | Responsabilitate | Tehnologie |
+|------------|------------------|------------|
+| Frontend | Interfață utilizator, formulare, navigare | React 19, Tailwind CSS |
+| API Routes | Logică business, orchestrare | Next.js API Routes |
+| Services | Operații CRUD, validare | TypeScript, Zod |
+| R1FS | Stocare imagini criptate | @ratio1/edge-sdk-ts |
+| CStore | Persistență metadate | @ratio1/cstore-auth-ts |
+| Inferență | Analiză AI imagini cervicale | Server local (port 5082) |
+
 ## Arhitectura Aplicației
 
 ```
