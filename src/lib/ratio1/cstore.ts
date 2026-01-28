@@ -5,6 +5,7 @@ import { getEdgeSdk } from "./sdk";
 export interface CStoreClient {
   createCase(record: CaseRecord): Promise<void>;
   updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord>;
+  deleteCase(caseId: string): Promise<void>;
   getCase(caseId: string): Promise<CaseRecord | null>;
   listCasesForUser(username: string): Promise<CaseRecord[]>;
   listAllCases(): Promise<CaseRecord[]>;
@@ -54,6 +55,13 @@ class RemoteCStoreClient implements CStoreClient {
       value: JSON.stringify(updated),
     });
     return updated;
+  }
+
+  async deleteCase(caseId: string): Promise<void> {
+    // TODO: Implement when CStore SDK supports hdel
+    // const sdk = await this.getSdk();
+    // await sdk.cstore.hdel({ hkey: config.CASES_HKEY, key: caseId });
+    console.warn(`[cstore] deleteCase not implemented - case ${caseId} not deleted`);
   }
 
   async getCase(caseId: string): Promise<CaseRecord | null> {

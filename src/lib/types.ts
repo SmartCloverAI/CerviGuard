@@ -24,15 +24,22 @@ export interface ImageInfo {
 }
 
 export interface CaseResult {
-  // Analysis results
-  lesion: ClassificationResult;
-  transformationZone: ClassificationResult;
+  // Status
+  status: "completed" | "error";
+  // Analysis results (only present when status is "completed")
+  lesion?: ClassificationResult;
+  transformationZone?: ClassificationResult;
   // Image info
   imageInfo: ImageInfo;
   // Metadata
   requestId: string;
   processedAt: number;
   processorVersion: string;
+  // Error fields (only present when status is "error")
+  error?: string;
+  errorCode?: string;
+  errorType?: string;
+  errorMessage?: string;
 }
 
 export interface CaseRecord {
