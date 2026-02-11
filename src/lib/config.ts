@@ -27,7 +27,9 @@ function parseBoolean(value: string | undefined, defaultValue = false): boolean 
 }
 
 const useMockBackend = parseBoolean(env.USE_RATIO1_MOCK, env.NODE_ENV !== "production");
+const useLocal = parseBoolean(env.USE_LOCAL, true);
 const localStateDir = env.LOCAL_STATE_DIR ?? ".ratio1-local-state";
+const dataDir = env.DATA_DIR ?? "data";
 const defaultAdminUsername = env.DEFAULT_ADMIN_USERNAME ?? "admin";
 const defaultAdminPassword = env.DEFAULT_ADMIN_PASSWORD ?? "password";
 
@@ -37,7 +39,9 @@ export const config = {
   CASES_HKEY: env.CSTORE_CASES_HKEY ?? "cerviguard:cases",
   DEBUG: env.NODE_ENV === "development" || env.DEBUG === "true",
   useMocks: useMockBackend,
+  useLocal,
   localStateDir,
+  dataDir,
   mockAdmin: {
     username: defaultAdminUsername,
     password: defaultAdminPassword,

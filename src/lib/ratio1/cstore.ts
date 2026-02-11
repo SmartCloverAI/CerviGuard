@@ -1,6 +1,7 @@
 import { config } from "../config";
 import type { CaseRecord } from "../types";
 import { getEdgeSdk } from "./sdk";
+import { JsonCStoreClient } from "./json-cstore-client";
 
 export interface CStoreClient {
   createCase(record: CaseRecord): Promise<void>;
@@ -85,11 +86,15 @@ class RemoteCStoreClient implements CStoreClient {
   }
 }
 
-let clientInstance: RemoteCStoreClient | null = null;
+let clientInstance: CStoreClient | null = null;
 
 export function getCStoreClient(): Promise<CStoreClient> {
   if (!clientInstance) {
-    clientInstance = new RemoteCStoreClient();
+    if (config.useLocal) {
+      clientInstance = new JsonCStoreClient();
+    } else {
+      clientInstance = new RemoteCStoreClient();
+    }
   }
   return Promise.resolve(clientInstance);
 }
