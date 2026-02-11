@@ -26,6 +26,9 @@
 # ratio1 local mock state
 .ratio1-local-state
 
+# local data storage
+/data
+
 # misc
 .DS_Store
 *.pem
