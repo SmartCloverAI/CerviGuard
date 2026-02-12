@@ -9,6 +9,34 @@ interface CaseResponse {
   };
 }
 
+function getErrorMessage(error: unknown, status?: number, serverError?: string): string {
+  if (error instanceof TypeError && error.message === "Failed to fetch") {
+    return "Unable to connect to server. Please check your connection or try again later.";
+  }
+
+  if (status === 401) {
+    return "Your session has expired. Please log in again.";
+  }
+
+  if (status === 422 && serverError) {
+    return serverError;
+  }
+
+  if (status === 500) {
+    return "Server error. The backend service may be unavailable. Please try again later.";
+  }
+
+  if (status === 503) {
+    return "Service temporarily unavailable. Please try again in a few moments.";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "An unexpected error occurred. Please try again.";
+}
+
 export default function NewCaseForm() {
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
@@ -40,14 +68,18 @@ export default function NewCaseForm() {
         method: "POST",
         body: formData,
       });
+
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        throw new Error(body.error ?? "Upload failed");
+        const message = getErrorMessage(null, response.status, body.error);
+        setError(message);
+        return;
       }
+
       const body: CaseResponse = await response.json();
       window.location.href = `/cases/${body.case.id}`;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to submit case");
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

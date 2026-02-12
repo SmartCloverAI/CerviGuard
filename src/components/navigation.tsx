@@ -12,10 +12,16 @@ export interface NavItem {
 export default function Navigation({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
+  // Check if there's an exact match for any item
+  const hasExactMatch = items.some((item) => item.href === pathname);
+
   return (
     <nav className="flex gap-2 text-sm">
       {items.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        // Use exact match if one exists, otherwise fall back to prefix matching
+        const isActive = hasExactMatch
+          ? pathname === item.href
+          : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}
