@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
 import { getCaseById } from "@/lib/services/caseService";
+import { DeleteCaseButton } from "./DeleteCaseButton";
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ caseId: string }> }) {
   const user = await getCurrentAuthenticatedUser();
@@ -52,9 +53,14 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
 
   return (
     <div className="space-y-6">
-      <Link href="/cases" className="text-sm text-teal-600 hover:text-teal-800">
-        ← Back to cases
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/cases" className="text-sm text-teal-600 hover:text-teal-800">
+          ← Back to cases
+        </Link>
+        {(user.role === "admin" || record.username === user.username) && (
+          <DeleteCaseButton caseId={record.id} />
+        )}
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="card lg:w-2/3">

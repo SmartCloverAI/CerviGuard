@@ -115,3 +115,8 @@ export async function listCasesWithUsers(): Promise<CaseWithUser[]> {
     user: mapped.get(caseRecord.username),
   }));
 }
+
+export async function deleteCase(caseId: string): Promise<void> {
+  const cstore = await getCStoreClient();
+  await cstore.deleteCase(caseId);
+}
