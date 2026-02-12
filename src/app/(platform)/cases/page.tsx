@@ -9,24 +9,60 @@ function isCaseWithUser(record: CaseRecord | CaseWithUser): record is CaseWithUs
   return "user" in record;
 }
 
-export default async function CasesPage() {
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 25;
+
+interface PageProps {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}
+
+export default async function CasesPage({ searchParams }: PageProps) {
   const user = await getCurrentAuthenticatedUser();
   if (!user) {
     redirect("/login");
   }
 
-  let cases: (CaseRecord | CaseWithUser)[] = [];
+  const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params.page || "1", 10) || 1);
+  const pageSize = PAGE_SIZE_OPTIONS.includes(parseInt(params.pageSize || "", 10))
+    ? parseInt(params.pageSize!, 10)
+    : DEFAULT_PAGE_SIZE;
+
+  let allCases: (CaseRecord | CaseWithUser)[] = [];
   let serviceError = false;
 
   try {
-    cases = user.role === "admin" ? await listCasesWithUsers() : await listCasesForUser(user);
+    allCases = user.role === "admin" ? await listCasesWithUsers() : await listCasesForUser(user);
   } catch (error) {
     console.error("[CasesPage] Failed to fetch cases:", error instanceof Error ? error.message : error);
     serviceError = true;
   }
 
+  // Sort by date (newest first)
+  const sortedCases = [...allCases].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  // Pagination calculations
+  const totalCases = sortedCases.length;
+  const totalPages = Math.ceil(totalCases / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const cases = sortedCases.slice(startIndex, endIndex);
+
+  // Ensure current page is valid
+  const validPage = Math.min(currentPage, Math.max(1, totalPages));
+
+  function buildUrl(page: number, size: number) {
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", page.toString());
+    if (size !== DEFAULT_PAGE_SIZE) params.set("pageSize", size.toString());
+    const query = params.toString();
+    return query ? `/cases?${query}` : "/cases";
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-16">
       {serviceError && (
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
           <h3 className="text-sm font-semibold text-rose-800">Services Unavailable</h3>
@@ -119,6 +155,87 @@ export default async function CasesPage() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalCases > 0 && (
+          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <span>Show</span>
+              <div className="flex gap-1">
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <Link
+                    key={size}
+                    href={buildUrl(1, size)}
+                    className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                      size === pageSize
+                        ? "bg-teal-600 text-white"
+                        : "bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {size}
+                  </Link>
+                ))}
+              </div>
+              <span>per page</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <span>
+                Showing {startIndex + 1}–{Math.min(endIndex, totalCases)} of {totalCases}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <Link
+                href={buildUrl(1, pageSize)}
+                className={`rounded px-2 py-1 text-xs font-medium ${
+                  validPage === 1
+                    ? "pointer-events-none text-slate-300"
+                    : "bg-white text-slate-600 hover:bg-slate-100"
+                }`}
+                aria-disabled={validPage === 1}
+              >
+                First
+              </Link>
+              <Link
+                href={buildUrl(validPage - 1, pageSize)}
+                className={`rounded px-2 py-1 text-xs font-medium ${
+                  validPage === 1
+                    ? "pointer-events-none text-slate-300"
+                    : "bg-white text-slate-600 hover:bg-slate-100"
+                }`}
+                aria-disabled={validPage === 1}
+              >
+                Prev
+              </Link>
+              <span className="px-2 py-1 text-xs text-slate-500">
+                Page {validPage} of {totalPages || 1}
+              </span>
+              <Link
+                href={buildUrl(validPage + 1, pageSize)}
+                className={`rounded px-2 py-1 text-xs font-medium ${
+                  validPage >= totalPages
+                    ? "pointer-events-none text-slate-300"
+                    : "bg-white text-slate-600 hover:bg-slate-100"
+                }`}
+                aria-disabled={validPage >= totalPages}
+              >
+                Next
+              </Link>
+              <Link
+                href={buildUrl(totalPages, pageSize)}
+                className={`rounded px-2 py-1 text-xs font-medium ${
+                  validPage >= totalPages
+                    ? "pointer-events-none text-slate-300"
+                    : "bg-white text-slate-600 hover:bg-slate-100"
+                }`}
+                aria-disabled={validPage >= totalPages}
+              >
+                Last
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
