@@ -1,6 +1,5 @@
-import { join } from "path";
 import { CStoreAuth, resolveAuthEnv, type CStoreAuthOptions } from "@ratio1/cstore-auth-ts";
-import { config } from "../config";
+import { config, getDataPath } from "../config";
 import { FileCStoreMock } from "./mock-cstore-client";
 
 const BASE_AUTH_OVERRIDES: Partial<Record<"hkey" | "secret", string>> = {};
@@ -38,7 +37,7 @@ export function getAuthClient(): CStoreAuth {
     };
 
     if (config.useMocks) {
-      const storePath = join(process.cwd(), config.localStateDir, "auth-store.json");
+      const storePath = getDataPath("auth-store.json");
       options.client = new FileCStoreMock(storePath);
     }
 
