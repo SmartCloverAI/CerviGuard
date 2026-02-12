@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
-import { createCase, listCasesForUser, listCasesWithUsers } from "@/lib/services/caseService";
+import { createCase, listCasesForUser, listCasesWithUsers, ImageValidationError } from "@/lib/services/caseService";
 
 const CreateCaseSchema = z.object({
   notes: z.string().max(500).optional(),
@@ -38,21 +38,32 @@ export async function POST(request: Request) {
   const parsed = CreateCaseSchema.parse({ notes: notes?.toString() });
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const created = await createCase({
-    user,
-    buffer,
-    filename: file.name || "case-image",
-    mimeType: file.type || "application/octet-stream",
-    notes: parsed.notes,
-  });
 
-  const owner = await getUserByUsername(created.username);
-  const responsePayload = {
-    case: {
-      ...created,
-      user: owner ? { username: owner.username, role: owner.role } : undefined,
-    },
-  };
+  try {
+    const created = await createCase({
+      user,
+      buffer,
+      filename: file.name || "case-image",
+      mimeType: file.type || "application/octet-stream",
+      notes: parsed.notes,
+    });
 
-  return NextResponse.json(responsePayload, { status: 201 });
+    const owner = await getUserByUsername(created.username);
+    const responsePayload = {
+      case: {
+        ...created,
+        user: owner ? { username: owner.username, role: owner.role } : undefined,
+      },
+    };
+
+    return NextResponse.json(responsePayload, { status: 201 });
+  } catch (error) {
+    if (error instanceof ImageValidationError) {
+      return NextResponse.json(
+        { error: "You uploaded an invalid image. Please upload a cervigram.", code: "INVALID_IMAGE" },
+        { status: 422 }
+      );
+    }
+    throw error;
+  }
 }

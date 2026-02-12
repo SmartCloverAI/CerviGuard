@@ -6,6 +6,13 @@ import { runCervicalAnalysis } from "../analysis/analyzer";
 import { listUsers } from "./userService";
 import type { CaseRecord, CaseWithUser } from "../types";
 
+export class ImageValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ImageValidationError";
+  }
+}
+
 export interface CreateCaseInput {
   user: PublicUser;
   buffer: Buffer;
@@ -17,6 +24,27 @@ export interface CreateCaseInput {
 export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   const cstore = await getCStoreClient();
   const r1fs = getR1FSClient();
+
+  // Run analysis first before storing anything
+  console.log(`[caseService] Starting analysis for new case`);
+  console.log(`[caseService] Image details:`, {
+    filename: input.filename,
+    mimeType: input.mimeType,
+    bufferSize: input.buffer.length,
+  });
+
+  const result = await runCervicalAnalysis(input.buffer);
+
+  console.log(`[caseService] Analysis completed`);
+  console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
+
+  // Handle validation error - don't save the case
+  if (result.status === "error" && result.errorType === "validation") {
+    console.log(`[caseService] Validation failed: ${result.errorMessage}`);
+    throw new ImageValidationError(
+      result.errorMessage || "The uploaded image does not appear to be a valid cervical image."
+    );
+  }
 
   // Store image in R1FS using base64 encoding
   const base64 = input.buffer.toString("base64");
@@ -31,66 +59,17 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
     id: generateId("case"),
     username: input.user.username,
     imageCid: uploadResult.cid,
-    status: "processing",
+    status: result.status === "error" ? "error" : "completed",
     notes: input.notes,
     createdAt: now,
     updatedAt: now,
+    result,
   };
 
   await cstore.createCase(caseRecord);
+  console.log(`[caseService] Case ${caseRecord.id} saved with status: ${caseRecord.status}`);
 
-  try {
-    console.log(`[caseService] Starting analysis for case ${caseRecord.id}`);
-    console.log(`[caseService] Image details:`, {
-      cid: uploadResult.cid,
-      filename: input.filename,
-      mimeType: input.mimeType,
-      bufferSize: input.buffer.length,
-    });
-
-    const result = await runCervicalAnalysis(input.buffer);
-
-    console.log(`[caseService] Analysis completed for case ${caseRecord.id}`);
-    console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
-
-    // Handle validation error from API - store error result and mark case as error
-    if (result.status === "error") {
-      console.log(`[caseService] Analysis returned error for case ${caseRecord.id}: ${result.errorMessage}`);
-
-      const errorCase = await cstore.updateCase(caseRecord.id, {
-        status: "error",
-        result,
-      });
-      return errorCase;
-    }
-
-    const completed = await cstore.updateCase(caseRecord.id, {
-      status: "completed",
-      result,
-    });
-    return completed;
-  } catch (error) {
-    console.error(`[caseService] Analysis failed for case ${caseRecord.id}:`, error);
-    console.error(`[caseService] Error details:`, {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
-    // Only update case to error status if it wasn't already deleted
-    try {
-      const existingCase = await cstore.getCase(caseRecord.id);
-      if (existingCase) {
-        await cstore.updateCase(caseRecord.id, {
-          status: "error",
-        });
-      }
-    } catch {
-      // Case was already deleted or doesn't exist
-    }
-
-    throw error;
-  }
+  return caseRecord;
 }
 
 export async function listCasesForUser(user: PublicUser): Promise<CaseRecord[]> {
