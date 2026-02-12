@@ -37,7 +37,7 @@ const chainstorePeersRaw =
   process.env.CHAINSTORE_PEERS ??
   process.env.NEXT_PUBLIC_CHAINSTORE_PEERS;
 
-const edgeNodeCount = parseChainstorePeers(chainstorePeersRaw).length + 1;
+const edgeNodeCount = parseChainstorePeers(chainstorePeersRaw).length || 1;
 
 export default function RootLayout({
   children,
