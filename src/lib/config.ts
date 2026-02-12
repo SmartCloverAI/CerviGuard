@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { join, isAbsolute } from "path";
 import { DEMO_SESSION_SECRET, readSessionSecretFromEnv } from "./constants/session";
 
 const env = process.env;
@@ -29,7 +30,12 @@ function parseBoolean(value: string | undefined, defaultValue = false): boolean 
 const useMockBackend = parseBoolean(env.USE_RATIO1_MOCK, env.NODE_ENV !== "production");
 const useLocal = parseBoolean(env.USE_LOCAL, true);
 const localStateDir = env.LOCAL_STATE_DIR ?? ".ratio1-local-state";
-const dataDir = env.DATA_DIR ?? "data";
+const dataDir = env.DATA_DIR ?? "/data";
+
+function resolveDataPath(...paths: string[]): string {
+  const base = isAbsolute(dataDir) ? dataDir : join(process.cwd(), dataDir);
+  return join(base, ...paths);
+}
 const defaultAdminUsername = env.DEFAULT_ADMIN_USERNAME ?? "admin";
 const defaultAdminPassword = env.DEFAULT_ADMIN_PASSWORD ?? "password";
 
@@ -90,7 +96,11 @@ export const SESSION_SECRET = (() => {
   return DEMO_SESSION_SECRET;
 })();
 
-// Utility function
+// Utility functions
 export function generateId(prefix: string) {
   return `${prefix}_${randomBytes(12).toString("hex")}`;
+}
+
+export function getDataPath(...paths: string[]): string {
+  return resolveDataPath(...paths);
 }

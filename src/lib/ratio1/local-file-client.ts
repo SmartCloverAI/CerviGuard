@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { randomBytes, createHash } from "crypto";
-import { config } from "../config";
+import { getDataPath } from "../config";
 
 interface FileMeta {
   filename: string;
@@ -14,14 +14,12 @@ interface FileIndex {
 }
 
 export class LocalFileClient {
-  private dataDir: string;
   private filesDir: string;
   private indexPath: string;
 
   constructor() {
-    this.dataDir = join(process.cwd(), config.dataDir);
-    this.filesDir = join(this.dataDir, "files");
-    this.indexPath = join(this.dataDir, "files.json");
+    this.filesDir = getDataPath("files");
+    this.indexPath = getDataPath("files.json");
 
     mkdirSync(this.filesDir, { recursive: true });
   }

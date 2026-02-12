@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { dirname } from "path";
 import type { CStoreClient } from "./cstore";
 import type { CaseRecord } from "../types";
-import { config } from "../config";
+import { getDataPath } from "../config";
 
 interface CasesStore {
   cases: Record<string, CaseRecord>;
@@ -12,9 +12,8 @@ export class JsonCStoreClient implements CStoreClient {
   private filePath: string;
 
   constructor() {
-    const dataDir = join(process.cwd(), config.dataDir);
-    mkdirSync(dataDir, { recursive: true });
-    this.filePath = join(dataDir, "cases.json");
+    this.filePath = getDataPath("cases.json");
+    mkdirSync(dirname(this.filePath), { recursive: true });
   }
 
   private readStore(): CasesStore {
