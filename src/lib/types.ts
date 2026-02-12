@@ -47,7 +47,7 @@ export interface CaseRecord {
   username: string;
   imageCid: string;
   notes?: string;
-  status: "processing" | "completed" | "error";
+  status: "completed" | "error";
   createdAt: string;
   updatedAt: string;
   result?: CaseResult;
