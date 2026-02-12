@@ -75,9 +75,6 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
               unoptimized
             />
           </div>
-          <p className="mt-3 text-xs text-slate-500">
-            CID: <span className="font-mono text-slate-600">{record.imageCid}</span>
-          </p>
         </div>
         <div className="flex-1 space-y-4">
           <div className="card">
@@ -86,11 +83,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
               <div className="flex justify-between">
                 <dt>Status</dt>
                 <dd className={`badge ${record.status === "error" ? "bg-rose-100 text-rose-700" : ""}`}>
-                  {record.status === "completed"
-                    ? "Analysis complete"
-                    : record.status === "processing"
-                      ? "Processing"
-                      : "Error"}
+                  {record.status === "completed" ? "Analysis complete" : "Error"}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -223,13 +216,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
                   </div>
                 )}
               </div>
-            ) : record.result ? (
-              <p className="mt-4 text-sm text-slate-500">
-                This case was analyzed with an older version. Please re-upload for updated results.
-              </p>
             ) : (
               <p className="mt-4 text-sm text-slate-500">
-                This case is still processing. Refresh the page or return in a few minutes.
+                No analysis data available. The case may have been analyzed with an older version.
               </p>
             )}
           </div>

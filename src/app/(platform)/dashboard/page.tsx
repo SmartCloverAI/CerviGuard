@@ -20,13 +20,21 @@ export default async function DashboardPage() {
     serviceError = true;
   }
 
-  const totalCases = cases.length;
   const completedCases = cases.filter((record) => record.status === "completed").length;
-  const inProgressCases = cases.filter((record) => record.status === "processing").length;
 
   const recentCases = [...cases]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  const healthyCases = cases.filter((record) => {
+    const topLabel = record.result?.lesion?.topLabel;
+    return topLabel === "Normal";
+  });
+
+  const midRiskCases = cases.filter((record) => {
+    const topLabel = record.result?.lesion?.topLabel;
+    return topLabel === "LSIL";
+  });
 
   const highRiskCases = cases.filter((record) => {
     const topLabel = record.result?.lesion?.topLabel;
@@ -46,25 +54,25 @@ export default async function DashboardPage() {
 
       <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">Total Cases</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">{totalCases}</p>
-          <p className="mt-1 text-xs text-slate-500">Historical uploads linked to your account</p>
-        </div>
-        <div className="card">
           <p className="text-sm font-medium text-slate-500">Completed Analyses</p>
-          <p className="mt-2 text-3xl font-semibold text-emerald-600">{completedCases}</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">{completedCases}</p>
           <p className="mt-1 text-xs text-slate-500">Cases with both TZ & lesion models finished</p>
         </div>
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">Processing</p>
-          <p className="mt-2 text-3xl font-semibold text-amber-600">{inProgressCases}</p>
-          <p className="mt-1 text-xs text-slate-500">Awaiting inference or storage confirmation</p>
+          <p className="text-sm font-medium text-slate-500">Healthy Patients</p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-600">{healthyCases.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Normal screening results, no lesions detected</p>
+        </div>
+        <div className="card">
+          <p className="text-sm font-medium text-slate-500">Mid-Risk Alerts</p>
+          <p className="mt-2 text-3xl font-semibold text-amber-600">{midRiskCases.length}</p>
+          <p className="mt-1 text-xs text-slate-500">LSIL cases requiring follow-up monitoring</p>
         </div>
         <div className="card">
           <p className="text-sm font-medium text-slate-500">High-Risk Alerts</p>
           <p className="mt-2 text-3xl font-semibold text-rose-600">{highRiskCases.length}</p>
           <p className="mt-1 text-xs text-slate-500">
-            Lesion assessment flagged as high-priority review
+            HSIL/Cancer cases requiring immediate review
           </p>
         </div>
       </section>
