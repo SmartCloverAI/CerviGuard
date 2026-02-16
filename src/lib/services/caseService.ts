@@ -72,12 +72,10 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   return caseRecord;
 }
 
-export async function listCasesForUser(user: PublicUser): Promise<CaseRecord[]> {
+export async function listCasesForUser(_user: PublicUser): Promise<CaseRecord[]> {
   const cstore = await getCStoreClient();
-  if (user.role === "admin") {
-    return cstore.listAllCases();
-  }
-  return cstore.listCasesForUser(user.username);
+  // All authenticated users can see all cases
+  return cstore.listAllCases();
 }
 
 export async function getCaseById(caseId: string): Promise<CaseRecord | null> {

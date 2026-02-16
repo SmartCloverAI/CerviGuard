@@ -14,10 +14,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cas
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
-  if (user.role !== "admin" && record.username !== user.username) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
+  // All authenticated users can view any case
   const owner = await getUserByUsername(record.username);
   return NextResponse.json({
     case: {

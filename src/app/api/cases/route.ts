@@ -13,12 +13,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (user.role === "admin") {
-    const cases = await listCasesWithUsers();
-    return NextResponse.json({ cases });
-  }
-
-  const cases = await listCasesForUser(user);
+   // All authenticated users can see all cases with user info
+  const cases = await listCasesWithUsers();
   return NextResponse.json({ cases });
 }
 

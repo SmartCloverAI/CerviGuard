@@ -24,10 +24,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
       notFound();
     }
 
-    if (user.role !== "admin" && record.username !== user.username) {
-      redirect("/cases");
-    }
-
+    // All authenticated users can view any case
     owner = await getUserByUsername(record.username);
   } catch (error) {
     console.error("[CaseDetailPage] Failed to fetch case:", error instanceof Error ? error.message : error);
