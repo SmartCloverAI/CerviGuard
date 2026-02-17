@@ -78,7 +78,7 @@ Use this exact schema for each new entry:
 ```
 
 ### Memory hygiene
-- Never rewrite or delete prior entries except to append a corrective entry.
+- Never rewrite or delete prior entries except to append a corrective entry, or when repository owners explicitly request pruning of minor entries (must record the pruning decision in the ledger).
 - Prefer concrete file paths and command evidence.
 - If an older memory is superseded, add a new entry that references it.
 
@@ -98,7 +98,7 @@ Use this exact schema for each new entry:
 - Do not describe or manage versioning via an `APP_VERSION` manual semantic segment policy unless code is changed to support that again.
 - When version changes are needed, update `package.json` version and document rationale in the task summary.
 
-## 6) Current Memory Ledger (Append-Only)
+## 6) Current Memory Ledger (Curated High-Signal)
 
 ### [2026-02-11 05:46 UTC] DISCOVERY Repository had `AGENT` but no `AGENTS.md`
 - Scope: repository governance docs.
@@ -154,15 +154,6 @@ Use this exact schema for each new entry:
 - Risk: low (process overhead), mitigated by higher reliability and less context loss.
 - Follow-up: none.
 
-### [2026-02-11 05:47 UTC] CHANGE Updated README to purpose/usability-first structure
-- Scope: `README.md`, onboarding and technical documentation.
-- Trigger: user request to prioritize need/objective/purpose and usability/features before technical detail.
-- Observation/Change: reorganized README to flow from mission and user workflow into implementation detail; aligned technical sections to actual code/env behavior.
-- Evidence: `README.md`, `src/lib/config.ts`, `next.config.ts`, `src/components/version-footer.tsx`.
-- Decision: keep README organized as product intent + usability first, technical/reference second.
-- Risk: low.
-- Follow-up: keep README synchronized whenever API/config/flows change.
-
 ### [2026-02-11 05:47 UTC] DISCOVERY `npm run lint` currently fails on baseline issues unrelated to docs
 - Scope: repository quality gates.
 - Trigger: post-change verification run.
@@ -172,29 +163,11 @@ Use this exact schema for each new entry:
 - Risk: medium (CI blockers and reduced signal quality).
 - Follow-up: schedule focused lint cleanup PR.
 
-### [2026-02-11 06:03 UTC] CHANGE Added canonical BibTeX citation to project docs
-- Scope: `README.md` citation/distribution metadata.
-- Trigger: user request to add BibTeX citation with team authors.
-- Observation/Change: added a terminal `Citation` section with a `@misc` BibTeX entry and author list in requested order.
-- Evidence: `README.md`.
-- Decision: use README as human-visible citation source of truth unless a dedicated `CITATION.bib`/`CITATION.cff` is introduced later.
-- Risk: low.
-- Follow-up: if publication metadata changes, update citation year/key/title consistently.
-
-### [2026-02-11 06:10 UTC] CHANGE Login screen now surfaces purpose and objectives before authentication
-- Scope: `src/app/(auth)/layout.tsx`, landing/login UX.
-- Trigger: user request to make application mission/objectives clearly visible from first screen.
-- Observation/Change: converted auth layout to two-panel experience with a dedicated purpose/objective/outcome information panel and refined sign-in copy.
-- Evidence: `src/app/(auth)/layout.tsx`, `npx eslint 'src/app/(auth)/layout.tsx'`.
-- Decision: preserve this mission-first framing on login so first-time visitors immediately understand CerviGuard intent.
-- Risk: low (UI-only change, no auth logic changes).
-- Follow-up: if branding language changes, update purpose/objective text in auth layout and README together.
-
-### [2026-02-11 06:16 UTC] CHANGE SmartClover logo integrated in landing and application header
-- Scope: `public/branding/smartclover-logo.jpg`, `src/app/(auth)/layout.tsx`, `src/app/(platform)/layout.tsx`.
-- Trigger: user request to fetch logo online and display it on landing plus page footer/header.
-- Observation/Change: downloaded official logo from `https://smartclover.ro/smartclover_logo.jpg` and added branded logo blocks to login landing and authenticated header.
-- Evidence: `public/branding/smartclover-logo.jpg`, `src/app/(auth)/layout.tsx`, `src/app/(platform)/layout.tsx`, `npx eslint 'src/app/(auth)/layout.tsx' 'src/app/(platform)/layout.tsx'`.
-- Decision: use the local bundled logo asset for stable rendering and avoid runtime external image dependencies.
-- Risk: low (presentation-only change, no behavioral logic impact).
-- Follow-up: replace with transparent/SVG source if brand team provides higher-fidelity identity assets.
+### [2026-02-17 10:54 UTC] CHANGE Pruned minor ledger entries by owner request
+- Scope: `AGENTS.md` memory ledger maintenance.
+- Trigger: explicit repository-owner request to prune minor modifications from memory.
+- Observation/Change: removed low-impact UI/docs/citation branding entries and retained high-signal architecture, security, process, and quality-gate records.
+- Evidence: `AGENTS.md`; `git diff -- AGENTS.md`.
+- Decision: keep ledger focused on durable operational facts; continue logging minor changes only when they materially impact future change safety.
+- Risk: low (reduced historical granularity), mitigated by preserving high-signal records and code history in git.
+- Follow-up: none.

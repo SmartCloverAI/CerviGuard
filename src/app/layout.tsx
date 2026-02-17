@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import GitHubLink from "@/components/github-link";
+import HuggingFaceLink from "@/components/huggingface-link";
+import ModelPublicationNote from "@/components/model-publication-note";
 import ServedBy from "@/components/served-by";
 import VersionFooter from "@/components/version-footer";
 import { ToastProvider } from "@/contexts/toast-context";
@@ -52,6 +54,8 @@ export default function RootLayout({
           <ToastContainer />
           <ServedBy hostId={hostId} edgeNodeCount={edgeNodeCount} />
           <VersionFooter />
+          <ModelPublicationNote />
+          <HuggingFaceLink />
           <GitHubLink />
         </ToastProvider>
       </body>

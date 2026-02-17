@@ -208,6 +208,7 @@ Before any production deployment:
   author       = {Andreea D and Cristian Bleotiu and Vitalii Toderian and Florian Nicula},
   year         = {2024-2026},
   howpublished = {\url{https://github.com/SmartCloverAI/CerviGuard}},
+  models       = {\url{https://huggingface.co/smartclover}},
   website      = {\url{https://cerviguard.link}},
   note         = {Pilot web console for cervical image analysis and case management}
 }
