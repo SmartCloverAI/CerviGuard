@@ -1,11 +1,9 @@
-# CerviGuard Agent Operating Memory
+# CerviGuard Agent Operating Protocol
 
-This file is the durable operating memory for all future agents working in this repository.
-It is both:
-- an execution protocol (`how to work`), and
-- an append-only memory ledger (`what has been learned/changed`).
+This file defines how agents should work in this repository.
+Durable project history belongs in `CHANGELOG.md`, not here.
 
-If instructions elsewhere conflict with this file, follow the stricter safety/quality rule and document the conflict in the memory ledger.
+If instructions elsewhere conflict with this file, follow the stricter safety/quality rule and record the conflict in `CHANGELOG.md`.
 
 ## 1) Non-Negotiable Workflow
 
@@ -15,7 +13,7 @@ For every task, execute in this order:
 3. **Adversarial Check (CRITIC Role, required)**: take the radical reverse role and attempt to break your own change.
 4. **Refine (BUILDER Role, required)**: apply fixes/improvements from the critic phase.
 5. **Verify**: run the narrowest meaningful checks and confirm behavior.
-6. **Append Memory**: if any important discovery/change/insight occurred, append a ledger entry.
+6. **Append Change Log**: if any important discovery/change/insight occurred, append an entry to `CHANGELOG.md`.
 
 No modification is complete until steps 3 and 4 are done.
 
@@ -44,9 +42,9 @@ After every modification (code, docs, config), explicitly run:
   - a justified rejection with evidence.
 - Re-run verification impacted by refinements.
 
-Record the outcome in the memory ledger whenever the critic phase surfaces a meaningful insight or correction.
+Record the outcome in `CHANGELOG.md` whenever the critic phase surfaces a meaningful insight or correction.
 
-## 3) Long-Term Memory Rules (Append-Only)
+## 3) Change Log Rules (Append-Only)
 
 ### What must be appended
 Append an entry for any **important**:
@@ -64,7 +62,7 @@ An item is important if it affects at least one of:
 - versioning/release process.
 
 ### Entry format (required)
-Use this exact schema for each new entry:
+Use this exact schema for each new entry in `CHANGELOG.md`:
 
 ```md
 ### [YYYY-MM-DD HH:MM UTC] <TYPE> <short title>
@@ -77,10 +75,10 @@ Use this exact schema for each new entry:
 - Follow-up: <next action or "none">
 ```
 
-### Memory hygiene
-- Never rewrite or delete prior entries except to append a corrective entry, or when repository owners explicitly request pruning of minor entries (must record the pruning decision in the ledger).
+### Change Log Hygiene
+- Never rewrite or delete prior entries in `CHANGELOG.md` except to append a corrective entry, or when repository owners explicitly request pruning of minor entries (must record the pruning decision in `CHANGELOG.md`).
 - Prefer concrete file paths and command evidence.
-- If an older memory is superseded, add a new entry that references it.
+- If an older entry is superseded, add a new entry that references it.
 
 ## 4) Project Ground Truth (Current)
 
@@ -92,10 +90,14 @@ Use this exact schema for each new entry:
 - Analysis: synchronous `POST {baseUrl}/predict` call from `src/lib/analysis/analyzer.ts`.
 - Mock mode default: enabled outside production (`USE_RATIO1_MOCK` defaults to `true` in dev).
 
-## 5) Release/Version Memory Rule
+## 5) Release/Version Rule
 
 - UI version footer reads from `package.json` version via `next.config.ts` (`NEXT_PUBLIC_APP_VERSION`), displayed in `src/components/version-footer.tsx`.
 - Do not describe or manage versioning via an `APP_VERSION` manual semantic segment policy unless code is changed to support that again.
-- When version changes are needed, update `package.json` version and document rationale in the task summary.
+- When version changes are needed, update `package.json` version and document rationale in the task summary and `CHANGELOG.md`.
 
-## 6) Current Memory Ledger (Curated High-Signal)
+## 6) History Location
+
+- `AGENTS.md` contains operating instructions only.
+- `CHANGELOG.md` contains durable discoveries, changes, and operational history.
+- Do not keep live history entries in `AGENTS.md`.

@@ -152,6 +152,12 @@ Additional display-only envs used by UI badges:
 - UI version footer reads `package.json` version via `next.config.ts` -> `NEXT_PUBLIC_APP_VERSION`.
 - If release version changes, update `package.json`.
 
+### Model Availability
+
+- Public CerviGuard model artifacts are available on Hugging Face under the `smartclover` organization: `https://huggingface.co/smartclover`.
+- Model creation and training scripts live in the separate repository: `https://github.com/SmartCloverAI/CerviGuardModels`.
+- This application repository contains the web console and integration logic, not the full model-training pipeline.
+
 ### API Surface (Current)
 
 - `POST /api/auth/login`
@@ -205,7 +211,7 @@ Before any production deployment:
 ```bibtex
 @misc{cerviguard_pilot,
   title        = {SmartClover CerviGuard Pilot},
-  author       = {Andreea D and Cristian Bleotiu and Vitalii Toderian and Florian Nicula},
+  author       = {Andreea D and Cristian Bleotiu and Florian Nicula},
   year         = {2024-2026},
   howpublished = {\url{https://github.com/SmartCloverAI/CerviGuard}},
   models       = {\url{https://huggingface.co/smartclover}},
