@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionUser } from "@/lib/auth/session";
-import { resetUserPassword } from "@/lib/services/userService";
+import { getCurrentAuthenticatedUser, resetUserPassword } from "@/lib/services/userService";
 
 const ResetPasswordSchema = z.object({
   username: z.string().min(3),
@@ -9,8 +8,8 @@ const ResetPasswordSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await getSessionUser();
-  if (!session || session.role !== "admin") {
+  const user = await getCurrentAuthenticatedUser();
+  if (!user || user.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

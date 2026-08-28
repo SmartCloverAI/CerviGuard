@@ -9,6 +9,7 @@ interface CasesStore {
 }
 
 export class JsonCStoreClient implements CStoreClient {
+  readonly supportsCaseDeletion = false;
   private filePath: string;
 
   constructor() {

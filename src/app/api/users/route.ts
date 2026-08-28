@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionUser } from "@/lib/auth/session";
-import { createUserAccount, listUsers, changeUserPassword, updateUser } from "@/lib/services/userService";
+import {
+  changeUserPassword,
+  createUserAccount,
+  getCurrentAuthenticatedUser,
+  listUsers,
+  updateUser,
+} from "@/lib/services/userService";
 
 const CreateUserSchema = z.object({
   username: z.string().min(3),
@@ -24,11 +29,11 @@ const UpdateUserSchema = z.object({
 });
 
 async function ensureAdmin() {
-  const session = await getSessionUser();
-  if (!session || session.role !== "admin") {
+  const user = await getCurrentAuthenticatedUser();
+  if (!user || user.role !== "admin") {
     return null;
   }
-  return session;
+  return user;
 }
 
 export async function GET() {
@@ -65,8 +70,8 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await getSessionUser();
-  if (!session) {
+  const user = await getCurrentAuthenticatedUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -75,7 +80,7 @@ export async function PUT(request: Request) {
     const parsed = ChangePasswordSchema.parse(payload);
 
     // Users can only change their own password unless they're admin
-    if (session.role !== "admin" && session.sub !== parsed.username) {
+    if (user.role !== "admin" && user.username !== parsed.username) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

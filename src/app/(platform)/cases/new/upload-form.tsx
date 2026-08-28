@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CaseResponse {
   case: {
@@ -38,6 +39,7 @@ function getErrorMessage(error: unknown, status?: number, serverError?: string):
 }
 
 export default function NewCaseForm() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export default function NewCaseForm() {
       }
 
       const body: CaseResponse = await response.json();
-      window.location.href = `/cases/${body.case.id}`;
+      router.push(`/cases/${body.case.id}`);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -99,7 +101,7 @@ export default function NewCaseForm() {
           }}
         />
         <p className="mt-1 text-xs text-slate-500">
-          We encrypt images client-side before transit to our decentralized, secure and privacy-oriented network.
+          Images are submitted through the authenticated workflow and stored through the configured content-addressed file service.
         </p>
       </div>
       <div>
@@ -119,7 +121,7 @@ export default function NewCaseForm() {
       </button>
       <p className="text-xs text-slate-500">
         By uploading you confirm the image has been de-identified and consent is handled offline, in
-        line with SmartClover pilot guidelines.
+        line with the organization&apos;s operating procedures.
       </p>
     </form>
   );

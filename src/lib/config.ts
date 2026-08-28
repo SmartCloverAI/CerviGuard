@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto";
 import { join, isAbsolute } from "path";
-import { DEMO_SESSION_SECRET, readSessionSecretFromEnv } from "./constants/session";
 
 const env = process.env;
 
@@ -33,7 +32,9 @@ const localStateDir = env.LOCAL_STATE_DIR ?? ".ratio1-local-state";
 const dataDir = env.DATA_DIR ?? "/data";
 
 function resolveDataPath(...paths: string[]): string {
-  const base = isAbsolute(dataDir) ? dataDir : join(process.cwd(), dataDir);
+  const base = isAbsolute(dataDir)
+    ? dataDir
+    : join(/* turbopackIgnore: true */ process.cwd(), dataDir);
   return join(base, ...paths);
 }
 const defaultAdminUsername = env.DEFAULT_ADMIN_USERNAME ?? "admin";
@@ -83,18 +84,6 @@ export const config = {
     debug: env.CERVIGUARD_API_DEBUG === "true",
   },
 };
-
-// Session secret (kept for compatibility)
-export const SESSION_SECRET = (() => {
-  const secret = readSessionSecretFromEnv(env);
-  if (secret) {
-    return secret;
-  }
-  console.warn(
-    "[config] SESSION_SECRET* env vars are missing; using demo fallback. TODO: replace with a secure secret before deploying.",
-  );
-  return DEMO_SESSION_SECRET;
-})();
 
 // Utility functions
 export function generateId(prefix: string) {

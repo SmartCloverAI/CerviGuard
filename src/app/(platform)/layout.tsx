@@ -18,6 +18,7 @@ export default async function PlatformLayout({ children }: { children: ReactNode
     { label: "Profile", href: "/profile" },
     ...(user.role === "admin" ? [{ label: "Admin", href: "/admin/users" }] : []),
   ];
+  const isEvidenceDemo = process.env.NEXT_PUBLIC_EVIDENCE_DEMO_MODE === "true";
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -33,7 +34,7 @@ export default async function PlatformLayout({ children }: { children: ReactNode
               priority
             />
             <div>
-              <h1 className="text-xl font-semibold text-slate-900">CerviGuard Pilot Console</h1>
+              <h1 className="text-xl font-semibold text-slate-900">CerviGuard workspace</h1>
               <p className="text-xs text-slate-500">
                 Logged in as {user.username} · Role: {user.role.toUpperCase()}
               </p>
@@ -45,6 +46,11 @@ export default async function PlatformLayout({ children }: { children: ReactNode
           </div>
         </div>
       </header>
+      {isEvidenceDemo && (
+        <div className="border-b border-amber-300 bg-amber-50 px-6 py-2 text-center text-xs font-semibold uppercase text-amber-900">
+          Demo environment · Synthetic data · Not for clinical use
+        </div>
+      )}
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
     </div>
   );

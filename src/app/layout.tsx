@@ -9,9 +9,9 @@ import { ToastProvider } from "@/contexts/toast-context";
 import { ToastContainer } from "@/components/toast";
 
 export const metadata: Metadata = {
-  title: "SmartClover CerviGuard Pilot",
+  title: "SmartClover CerviGuard",
   description:
-    "Secure pilot console for SmartClover's cervical screening workflow, powered by decentralized, secure and privacy-oriented technology.",
+    "CerviGuard workspace for structured cervical-screening intake, AI-assisted model review, and case history.",
 };
 
 const parseChainstorePeers = (value?: string) => {
@@ -46,6 +46,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isEvidenceDemo = process.env.NEXT_PUBLIC_EVIDENCE_DEMO_MODE === "true";
+
   return (
     <html lang="en">
       <body>
@@ -54,9 +56,13 @@ export default function RootLayout({
           <ToastContainer />
           <ServedBy hostId={hostId} edgeNodeCount={edgeNodeCount} />
           <VersionFooter />
-          <ModelPublicationNote />
-          <HuggingFaceLink />
-          <GitHubLink />
+          {!isEvidenceDemo && (
+            <>
+              <ModelPublicationNote />
+              <HuggingFaceLink />
+              <GitHubLink />
+            </>
+          )}
         </ToastProvider>
       </body>
     </html>

@@ -4,6 +4,7 @@ import { getEdgeSdk } from "./sdk";
 import { JsonCStoreClient } from "./json-cstore-client";
 
 export interface CStoreClient {
+  readonly supportsCaseDeletion: boolean;
   createCase(record: CaseRecord): Promise<void>;
   updateCase(caseId: string, updates: Partial<CaseRecord>): Promise<CaseRecord>;
   deleteCase(caseId: string): Promise<void>;
@@ -25,6 +26,7 @@ function parseRecord<T>(value: string | null): T | null {
 }
 
 class RemoteCStoreClient implements CStoreClient {
+  readonly supportsCaseDeletion = false;
   private async getSdk() {
     return getEdgeSdk();
   }
@@ -59,16 +61,11 @@ class RemoteCStoreClient implements CStoreClient {
   }
 
   async deleteCase(caseId: string): Promise<void> {
-    // TODO: Implement when CStore SDK supports hdel
-    // const sdk = await this.getSdk();
-    // await sdk.cstore.hdel({ hkey: config.CASES_HKEY, key: caseId });
-    console.warn(`[cstore] deleteCase not implemented - case ${caseId} not deleted`);
+    throw new Error(`Case deletion is unsupported by the configured CStore backend (${caseId}).`);
   }
 
   async getCase(caseId: string): Promise<CaseRecord | null> {
     const sdk = await this.getSdk();
-    console.log('[cstore] getCase called with caseId:', caseId);
-    console.log('[cstore] hget params:', { hkey: config.CASES_HKEY, key: caseId });
     const raw = await sdk.cstore.hget({ hkey: config.CASES_HKEY, key: caseId });
     return parseRecord<CaseRecord>(raw);
   }

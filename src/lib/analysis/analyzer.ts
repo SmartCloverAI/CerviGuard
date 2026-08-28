@@ -107,14 +107,13 @@ function validateAndMapResponse(data: CerviguardApiResponse["result"]): CaseResu
 }
 
 export async function runCervicalAnalysis(buffer: Buffer): Promise<CaseResult> {
-  console.log('[analyzer] Running cervical analysis via API');
-  console.log('[analyzer] Input buffer size:', buffer.length, 'bytes');
-  console.log('[analyzer] API URL:', config.cerviguardApi.baseUrl);
+  if (config.cerviguardApi.debug) {
+    console.log('[analyzer] Running cervical analysis via API');
+    console.log('[analyzer] Input buffer size:', buffer.length, 'bytes');
+  }
 
   const base64 = buffer.toString("base64");
   const url = `${config.cerviguardApi.baseUrl}/predict`;
-
-  console.log('[analyzer] Sending request to:', url);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), config.cerviguardApi.timeout);
@@ -134,19 +133,16 @@ export async function runCervicalAnalysis(buffer: Buffer): Promise<CaseResult> {
 
     clearTimeout(timeoutId);
 
-    console.log('[analyzer] API response status:', response.status);
+    if (config.cerviguardApi.debug) {
+      console.log('[analyzer] API response status:', response.status);
+    }
 
     if (!response.ok) {
       throw new Error(`API returned ${response.status}: ${response.statusText}`);
     }
 
     const data = (await response.json()) as CerviguardApiResponse;
-    console.log('[analyzer] API response:', JSON.stringify(data, null, 2));
-
-    const result = validateAndMapResponse(data.result);
-    console.log('[analyzer] Mapped result:', result);
-
-    return result;
+    return validateAndMapResponse(data.result);
   } catch (error) {
     clearTimeout(timeoutId);
     console.error('[analyzer] Analysis failed:', error);

@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getCurrentAuthenticatedUser } from "@/lib/services/userService";
-import { getCaseById } from "@/lib/services/caseService";
+import { getCaseForUser } from "@/lib/services/caseService";
 import { getR1FSClient } from "@/lib/ratio1/r1fs";
 
 export async function GET(request: NextRequest, context: { params: Promise<{ cid: string }> }) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cid
     return NextResponse.json({ error: "caseId is required" }, { status: 400 });
   }
 
-  const record = await getCaseById(caseId);
+  const record = await getCaseForUser(caseId, user);
   if (!record) {
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
@@ -25,7 +25,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cid
     return NextResponse.json({ error: "Case does not own this CID" }, { status: 400 });
   }
 
-  // All authenticated users can view any case's images
   const r1fs = getR1FSClient();
   const result = await r1fs.getFile({ cid });
 
@@ -36,7 +35,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cid
     return new Response(arrayBuffer, {
       headers: {
         "Content-Type": mimeType,
-        "Cache-Control": "private, max-age=60",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   }
@@ -56,7 +56,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cid
     return new Response(buffer, {
       headers: {
         "Content-Type": mimeType,
-        "Cache-Control": "private, max-age=60",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   }

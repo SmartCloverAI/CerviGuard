@@ -54,25 +54,25 @@ export default async function DashboardPage() {
 
       <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">Completed Analyses</p>
+          <p className="text-sm font-medium text-slate-500">Completed model analyses</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">{completedCases}</p>
           <p className="mt-1 text-xs text-slate-500">Cases with both TZ & lesion models finished</p>
         </div>
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">Healthy Patients</p>
+          <p className="text-sm font-medium text-slate-500">Normal outputs</p>
           <p className="mt-2 text-3xl font-semibold text-emerald-600">{healthyCases.length}</p>
-          <p className="mt-1 text-xs text-slate-500">Normal screening results, no lesions detected</p>
+          <p className="mt-1 text-xs text-slate-500">Cases where the lesion model returned Normal</p>
         </div>
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">Mid-Risk Alerts</p>
+          <p className="text-sm font-medium text-slate-500">LSIL review flags</p>
           <p className="mt-2 text-3xl font-semibold text-amber-600">{midRiskCases.length}</p>
-          <p className="mt-1 text-xs text-slate-500">LSIL cases requiring follow-up monitoring</p>
+          <p className="mt-1 text-xs text-slate-500">Cases where the lesion model returned LSIL</p>
         </div>
         <div className="card">
-          <p className="text-sm font-medium text-slate-500">High-Risk Alerts</p>
+          <p className="text-sm font-medium text-slate-500">HSIL/Cancer review flags</p>
           <p className="mt-2 text-3xl font-semibold text-rose-600">{highRiskCases.length}</p>
           <p className="mt-1 text-xs text-slate-500">
-            HSIL/Cancer cases requiring immediate review
+            Cases where the lesion model returned HSIL or Cancer
           </p>
         </div>
       </section>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Recent cases</h2>
             <p className="text-sm text-slate-500">
-              Track the most recent uploads and their automated results.
+              Review recent submissions and model-generated results.
             </p>
           </div>
           <Link href="/cases" className="text-sm font-medium text-teal-700 hover:text-teal-900">

@@ -27,7 +27,7 @@ export default async function AdminUsersPage() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">User management</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Provision and monitor pilot accounts synchronized through decentralized, secure and privacy-oriented technology.
+          Provision and manage authorized CerviGuard accounts and roles.
         </p>
       </div>
 

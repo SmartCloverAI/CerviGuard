@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface LoginPayload {
   username: string;
@@ -8,6 +9,7 @@ interface LoginPayload {
 }
 
 export default function LoginForm() {
+  const router = useRouter();
   const [form, setForm] = useState<LoginPayload>({ username: "", password: "" });
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,8 @@ export default function LoginForm() {
         const body = await response.json().catch(() => ({}));
         throw new Error(body.error ?? "Login failed");
       }
-      window.location.href = "/dashboard";
+      router.replace("/dashboard");
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to authenticate");
     } finally {
@@ -77,7 +80,7 @@ export default function LoginForm() {
         {isSubmitting ? "Signing in…" : "Sign In"}
       </button>
       <p className="text-xs text-slate-500">
-        Access is limited to SmartClover pilot accounts provisioned via the admin dashboard.
+        Access is limited to accounts provisioned by an administrator.
       </p>
     </form>
   );

@@ -177,7 +177,7 @@ export default function EditUserModal({
               </div>
             </button>
             <p className="mt-2 text-xs text-slate-500 text-center">
-              Reset user's password without requiring current password
+              Reset user&apos;s password without requiring current password
             </p>
           </div>
 

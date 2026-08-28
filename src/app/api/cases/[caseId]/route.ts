@@ -1,6 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
-import { getCaseById, deleteCase } from "@/lib/services/caseService";
+import {
+  CaseDeletionUnavailableError,
+  deleteCaseForUser,
+  getCaseForUser,
+} from "@/lib/services/caseService";
 
 export async function GET(request: NextRequest, context: { params: Promise<{ caseId: string }> }) {
   const { caseId } = await context.params;
@@ -9,12 +13,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cas
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const record = await getCaseById(caseId);
+  const record = await getCaseForUser(caseId, user);
   if (!record) {
     return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
 
-  // All authenticated users can view any case
   const owner = await getUserByUsername(record.username);
   return NextResponse.json({
     case: {
@@ -40,17 +43,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const record = await getCaseById(caseId);
-  if (!record) {
-    return NextResponse.json({ error: "Case not found" }, { status: 404 });
+  try {
+    const deleted = await deleteCaseForUser(caseId, user);
+    if (!deleted) {
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (error instanceof CaseDeletionUnavailableError) {
+      return NextResponse.json({ error: error.message }, { status: 501 });
+    }
+    throw error;
   }
-
-  // Allow admins or case owner to delete
-  if (user.role !== "admin" && record.username !== user.username) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  await deleteCase(caseId);
-
-  return NextResponse.json({ success: true });
 }

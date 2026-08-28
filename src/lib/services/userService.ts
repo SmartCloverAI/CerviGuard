@@ -133,7 +133,12 @@ export async function resetUserPassword(username: string, newPassword: string) {
 
     // Access the internal CStore client to update the password directly
     // This requires accessing private members, so we use type assertion
-    const client = (authClient as any).client;
+    const client = (authClient as unknown as {
+      client: {
+        get(key: string): Promise<string | null | undefined>;
+        put(key: string, value: string): Promise<unknown>;
+      };
+    }).client;
     const secret = config.auth.cstore.secret || "";
 
     if (!secret) {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentAuthenticatedUser, getUserByUsername } from "@/lib/services/userService";
-import { getCaseById } from "@/lib/services/caseService";
+import { canDeleteCases, getCaseForUser } from "@/lib/services/caseService";
 import { DeleteCaseButton } from "./DeleteCaseButton";
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ caseId: string }> }) {
@@ -13,22 +13,26 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
   }
 
   const { caseId } = await params;
+  const isEvidenceDemo = process.env.NEXT_PUBLIC_EVIDENCE_DEMO_MODE === "true";
 
   let record;
   let owner;
+  let deletionSupported = false;
   let serviceError = false;
 
   try {
-    record = await getCaseById(caseId);
-    if (!record) {
-      notFound();
+    record = await getCaseForUser(caseId, user);
+    if (record) {
+      owner = await getUserByUsername(record.username);
+      deletionSupported = await canDeleteCases();
     }
-
-    // All authenticated users can view any case
-    owner = await getUserByUsername(record.username);
   } catch (error) {
     console.error("[CaseDetailPage] Failed to fetch case:", error instanceof Error ? error.message : error);
     serviceError = true;
+  }
+
+  if (!serviceError && !record) {
+    notFound();
   }
 
   if (serviceError || !record) {
@@ -54,7 +58,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
         <Link href="/cases" className="text-sm text-teal-600 hover:text-teal-800">
           ← Back to cases
         </Link>
-        {(user.role === "admin" || record.username === user.username) && (
+        {deletionSupported && (
           <DeleteCaseButton caseId={record.id} />
         )}
       </div>
@@ -63,14 +67,25 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
         <div className="card lg:w-2/3">
           <p className="badge mb-3">Case imagery</p>
           <div className="relative h-[420px] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-            <Image
-              src={`/api/files/${record.imageCid}?caseId=${record.id}`}
-              alt="Cervical screening case"
-              fill
-              sizes="(max-width: 768px) 100vw, 640px"
-              className="object-contain"
-              unoptimized
-            />
+            {isEvidenceDemo ? (
+              <div className="flex h-full items-center justify-center p-8 text-center">
+                <div>
+                  <p className="text-sm font-semibold uppercase text-amber-800">Synthetic demo input</p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    No patient image is displayed in this evidence capture.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <Image
+                src={`/api/files/${record.imageCid}?caseId=${record.id}`}
+                alt="Cervical screening case"
+                fill
+                sizes="(max-width: 768px) 100vw, 640px"
+                className="object-contain"
+                unoptimized
+              />
+            )}
           </div>
         </div>
         <div className="flex-1 space-y-4">
@@ -117,7 +132,11 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
           )}
 
           <div className="card">
-            <h2 className="text-lg font-semibold text-slate-900">AI analysis</h2>
+            <h2 className="text-lg font-semibold text-slate-900">AI-assisted model output</h2>
+            <p className="mt-2 rounded-md border border-teal-100 bg-teal-50 px-3 py-2 text-xs text-teal-900">
+              A qualified professional remains responsible for interpreting this output and deciding
+              any follow-up action.
+            </p>
             {record.result?.status === "error" ? (
               <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
                 <p className="font-medium text-rose-800">Image Validation Failed</p>

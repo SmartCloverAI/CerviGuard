@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import { SESSION_SECRET, config } from "../config";
+import { config } from "../config";
 import { SESSION_COOKIE } from "../constants";
+import { resolveSessionSecret } from "../constants/session";
 import type { UserRole } from "../types";
 
 export interface SessionPayload {
@@ -12,7 +13,7 @@ export interface SessionPayload {
 }
 
 function getSecretKey() {
-  return new TextEncoder().encode(SESSION_SECRET);
+  return new TextEncoder().encode(resolveSessionSecret(process.env));
 }
 
 export async function createSessionToken(payload: { sub: string; role?: UserRole }) {

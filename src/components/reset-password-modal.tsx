@@ -108,7 +108,7 @@ export default function ResetPasswordModal({
             Set a new password for <span className="font-medium text-slate-700">{username}</span>
           </p>
           <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <strong>Admin Action:</strong> You can reset this user's password without knowing their current password.
+            <strong>Admin Action:</strong> You can reset this user&apos;s password without knowing their current password.
           </p>
         </div>
 

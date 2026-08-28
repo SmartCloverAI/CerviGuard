@@ -13,8 +13,8 @@ export default async function NewCasePage() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Add new cervical screening case</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Images are encrypted and stored through decentralized, secure and privacy-oriented
-          technology. Analytic results are written to the shared metadata ledger.
+          Submit a de-identified image for model-assisted analysis. Storage, encryption, and metadata
+          controls follow the configuration of the deployed environment.
         </p>
       </div>
       <NewCaseForm />
@@ -22,14 +22,13 @@ export default async function NewCasePage() {
         <h2 className="font-semibold text-slate-800">Upload & privacy guidance</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>Ensure identifying patient markers are obscured prior to upload.</li>
-          <li>Accepted formats: JPEG, PNG, WEBP. Max size 20 MB for this pilot build.</li>
+          <li>Accepted formats: JPEG, PNG, WEBP. Maximum size: 20 MB.</li>
           <li>
             Processing typically completes in seconds. Complex cases may take longer depending on
             model load.
           </li>
           <li>
-            Admins can monitor aggregate activity, but only you and admins can view the original
-            imagery.
+            Case details and imagery are limited to the submitting clinician and administrators.
           </li>
         </ul>
       </aside>

@@ -1,5 +1,5 @@
-import { NextResponse, NextRequest } from "next/server";
-import { getSessionUser } from "@/lib/auth/session";
+import { NextResponse } from "next/server";
+import { getCurrentAuthenticatedUser } from "@/lib/services/userService";
 
 /**
  * Admin password reset endpoint
@@ -11,12 +11,9 @@ import { getSessionUser } from "@/lib/auth/session";
  * This endpoint returns a 501 Not Implemented status to indicate that
  * admin password resets are not available when using the auth library.
  */
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ userId: string }> },
-) {
-  const session = await getSessionUser();
-  if (!session || session.role !== "admin") {
+export async function PATCH() {
+  const user = await getCurrentAuthenticatedUser();
+  if (!user || user.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

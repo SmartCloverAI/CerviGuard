@@ -24,33 +24,33 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 <p className="text-base font-semibold text-slate-900">SmartClover</p>
               </div>
             </div>
-            <p className="badge mt-4">SmartClover Cervical Screening Pilot</p>
+            <p className="badge mt-4">CerviGuard clinical review workspace</p>
             <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl">
-              Better cervical screening decisions start with structured, secure case intelligence.
+              Structured cervical-screening workflows, from intake to clinician review.
             </h1>
             <p className="mt-4 max-w-2xl text-sm text-slate-600 sm:text-base">
-              CerviGuard helps care teams upload de-identified cervical images, run objective AI-assisted analysis,
-              and prioritize review with transparent clinical signals.
+              CerviGuard brings de-identified image intake, AI-assisted model outputs, and case history into one
+              authenticated workspace.
             </p>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Purpose</p>
-                <p className="mt-1.5 text-sm font-medium text-slate-800">Accelerate early risk visibility</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Intake</p>
+                <p className="mt-1.5 text-sm font-medium text-slate-800">Structure case submissions</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Objective</p>
-                <p className="mt-1.5 text-sm font-medium text-slate-800">Standardize case intake and analysis</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Review</p>
+                <p className="mt-1.5 text-sm font-medium text-slate-800">Inspect model-generated outputs</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Outcome</p>
-                <p className="mt-1.5 text-sm font-medium text-slate-800">Improve triage confidence and speed</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Control</p>
+                <p className="mt-1.5 text-sm font-medium text-slate-800">Keep decisions with qualified professionals</p>
               </div>
             </div>
 
             <div className="mt-6 rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
-              Designed for authorized clinicians and admins who need privacy-oriented workflows with clear role-based
-              accountability.
+              Designed for authorized clinicians and administrators, with owner-scoped case access and explicit
+              professional review boundaries.
             </div>
           </section>
 
@@ -61,7 +61,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 Sign In to CerviGuard
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Access your screening workspace to manage cases, results, and clinical follow-up.
+                Access the workspace to manage cases, model outputs, and review history.
               </p>
             </div>
             {children}

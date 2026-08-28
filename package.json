@@ -1,12 +1,14 @@
 {
   "name": "app",
-  "version": "0.4.9",
+  "version": "0.4.10",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --test tests/access-control.test.mjs",
+    "test:integration": "node --test tests/access-control.integration.mjs"
   },
   "dependencies": {
     "@ratio1/cstore-auth-ts": "^0.6.1",
@@ -15,7 +17,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "jose": "^5.9.3",
-    "next": "16.0.1",
+    "next": "^16.3.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "zod": "^3.24.1"
@@ -27,7 +29,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.0.1",
+    "eslint-config-next": "^16.3.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

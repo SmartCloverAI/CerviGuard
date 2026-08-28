@@ -1,6 +1,6 @@
-# SmartClover CerviGuard Pilot
+# SmartClover CerviGuard
 
-CerviGuard is a system for cervical image intake, automated AI analysis, and role-based clinical review. It is designed for privacy-oriented workflows where imaging artifacts are end-to-end encrypted and stored by content ID while the encrypted case metadata is synchronized through distributed services on permissioned edge-nodes with no central authority, no single point of failure, no central cenzorship, true data governance/ownership and full auditability. The web console functions in conjunction with on-edge inference capabilities to provide transformation zone and lesion classification for cervical screening support.
+CerviGuard is a working prototype for cervical image intake, automated AI analysis, and role-based clinical review. The web console integrates content-addressed image storage, distributed case metadata, and an on-edge inference service in deployments configured with the corresponding Ratio1 services. Encryption, infrastructure resilience, authorization, and audit controls remain deployment-specific and must be verified for each operating environment.
 
 ## Need
 
@@ -11,7 +11,7 @@ Cervical screening teams need a workflow that is:
 
 ## Objective
 
-Provide a production-approachable pilot that lets authorized users:
+Provide a working prototype that lets authorized users:
 - authenticate with role-based access,
 - upload de-identified cervical images,
 - receive automated transformation-zone and lesion classifications,
@@ -26,7 +26,7 @@ Bridge clinical workflow and decentralized infrastructure by combining:
 
 ## Usability and Features
 
-This prototype (TRL 6) has been already used in a small-scale oncological clinical context with de-identified images. It is not currently hardened for production deployment, but it demonstrates the core workflow and technical architecture needed to support a secure, efficient, and user-friendly cervical screening case management system.
+This repository contains a working prototype and is being used as the software starting point for TealGuard. The source, tests, and public demonstration artifacts establish implemented workflow behavior. They do not, by themselves, establish clinical performance, production readiness, medical-device conformity, use in a relevant environment, or a technology-readiness level.
 
 ### Quick Start
 
@@ -106,11 +106,11 @@ Browser UI
 ### Data and Processing Flow
 
 1. `/api/cases` receives multipart upload.
-2. Image bytes are encoded to base64 and sent to R1FS.
-3. Case record is created in CStore with `status: processing`.
-4. Analyzer calls `POST {baseUrl}/predict` with base64 payload.
-5. Response is validated/mapped to internal `CaseResult`.
-6. Case record is updated to `completed` or `error`.
+2. Analyzer calls `POST {baseUrl}/predict` with a base64 payload.
+3. The response is validated and mapped to an internal `CaseResult`.
+4. If validation fails, no case or image is stored.
+5. Otherwise, image bytes are encoded to base64 and sent to R1FS.
+6. The completed or error case record is stored in CStore.
 
 Important behavior:
 - Current analysis path is synchronous inside case creation.
@@ -134,7 +134,7 @@ Important behavior:
 | `LOCAL_STATE_DIR` | Local mock storage directory | `.ratio1-local-state` |
 | `DEFAULT_ADMIN_USERNAME` | Seed admin username (mock) | `admin` |
 | `DEFAULT_ADMIN_PASSWORD` | Seed admin password (mock/bootstrap fallback) | `password` |
-| `SESSION_SECRET` / `NEXT_PUBLIC_SESSION_SECRET` / `EE_SESSION_SECRET` / `EDGE_SESSION_SECRET` | JWT signing secret source chain | falls back to demo value if unset (not safe for prod) |
+| `SESSION_SECRET` / `EE_SESSION_SECRET` / `EDGE_SESSION_SECRET` | Server-only JWT signing secret source chain | at least 32 characters and required at runtime in production; demo fallback is development-only |
 | `EE_R1FS_API_URL` / `R1FS_API_URL` | R1FS endpoint override | optional |
 | `EE_CHAINSTORE_API_URL` / `CHAINSTORE_API_URL` | CStore endpoint override | optional |
 | `EE_CHAINSTORE_PEERS` / `CHAINSTORE_PEERS` | Peer list JSON array | `[]` |
@@ -194,7 +194,7 @@ src/
 ### Security and Deployment Baseline
 
 Before any production deployment:
-1. Set secure session/auth secrets (no demo fallbacks).
+1. Set server-only session/auth secrets; production requests fail closed without a session secret of at least 32 characters.
 2. Set `USE_RATIO1_MOCK=false`.
 3. Configure real R1FS/CStore endpoints.
 4. Validate analyzer connectivity and timeout profile for expected workload.
@@ -202,8 +202,8 @@ Before any production deployment:
 
 ### Known Gaps / Follow-Up Targets
 
-- No automated test suite is currently wired (unit/integration/e2e).
-- `deleteCase` is stubbed in CStore client pending SDK support for delete semantics.
+- Focused authorization tests cover case ownership; broader unit, integration, and end-to-end coverage remains to be added.
+- Case deletion is disabled when the configured CStore backend does not expose delete semantics.
 - Case creation currently blocks on analysis completion; queue-based async orchestration is a natural next hardening step.
 
 ## Citations

@@ -1,8 +1,9 @@
 import { type PublicUser } from "@ratio1/cstore-auth-ts";
 import { getCStoreClient } from "../ratio1/cstore";
 import { getR1FSClient } from "../ratio1/r1fs";
-import { generateId } from "../config";
+import { config, generateId } from "../config";
 import { runCervicalAnalysis } from "../analysis/analyzer";
+import { canAccessCase, filterCasesForUser } from "../auth/case-access";
 import { listUsers } from "./userService";
 import type { CaseRecord, CaseWithUser } from "../types";
 
@@ -26,17 +27,15 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   const r1fs = getR1FSClient();
 
   // Run analysis first before storing anything
-  console.log(`[caseService] Starting analysis for new case`);
-  console.log(`[caseService] Image details:`, {
-    filename: input.filename,
-    mimeType: input.mimeType,
-    bufferSize: input.buffer.length,
-  });
+  if (config.DEBUG) {
+    console.log(`[caseService] Starting analysis for ${input.mimeType} input (${input.buffer.length} bytes)`);
+  }
 
   const result = await runCervicalAnalysis(input.buffer);
 
-  console.log(`[caseService] Analysis completed`);
-  console.log(`[caseService] Analysis result:`, JSON.stringify(result, null, 2));
+  if (config.DEBUG) {
+    console.log(`[caseService] Analysis completed with status: ${result.status}`);
+  }
 
   // Handle validation error - don't save the case
   if (result.status === "error" && result.errorType === "validation") {
@@ -72,15 +71,48 @@ export async function createCase(input: CreateCaseInput): Promise<CaseRecord> {
   return caseRecord;
 }
 
-export async function listCasesForUser(_user: PublicUser): Promise<CaseRecord[]> {
+export async function listCasesForUser(user: PublicUser): Promise<CaseRecord[]> {
   const cstore = await getCStoreClient();
-  // All authenticated users can see all cases
-  return cstore.listAllCases();
+  if (user.role === "admin") {
+    return cstore.listAllCases();
+  }
+  return filterCasesForUser(user, await cstore.listCasesForUser(user.username));
 }
 
-export async function getCaseById(caseId: string): Promise<CaseRecord | null> {
+async function getCaseById(caseId: string): Promise<CaseRecord | null> {
   const cstore = await getCStoreClient();
   return cstore.getCase(caseId);
+}
+
+export async function getCaseForUser(caseId: string, user: PublicUser): Promise<CaseRecord | null> {
+  const record = await getCaseById(caseId);
+  return record && canAccessCase(user, record) ? record : null;
+}
+
+export class CaseDeletionUnavailableError extends Error {
+  constructor() {
+    super("Case deletion is unavailable for the configured storage backend.");
+    this.name = "CaseDeletionUnavailableError";
+  }
+}
+
+export async function canDeleteCases(): Promise<boolean> {
+  return (await getCStoreClient()).supportsCaseDeletion;
+}
+
+export async function deleteCaseForUser(caseId: string, user: PublicUser): Promise<boolean> {
+  const record = await getCaseForUser(caseId, user);
+  if (!record) {
+    return false;
+  }
+
+  const cstore = await getCStoreClient();
+  if (!cstore.supportsCaseDeletion) {
+    throw new CaseDeletionUnavailableError();
+  }
+
+  await cstore.deleteCase(caseId);
+  return true;
 }
 
 export async function listCasesWithUsers(): Promise<CaseWithUser[]> {
@@ -91,9 +123,4 @@ export async function listCasesWithUsers(): Promise<CaseWithUser[]> {
     ...caseRecord,
     user: mapped.get(caseRecord.username),
   }));
-}
-
-export async function deleteCase(caseId: string): Promise<void> {
-  const cstore = await getCStoreClient();
-  await cstore.deleteCase(caseId);
 }

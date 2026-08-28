@@ -77,7 +77,7 @@ export default async function CasesPage({ searchParams }: PageProps) {
           <h1 className="text-2xl font-semibold text-slate-900">Case history</h1>
           <p className="text-sm text-slate-500">
             {user.role === "admin"
-              ? "Full ledger of analyses across all pilot clinicians."
+              ? "Case history across all authorized clinicians."
               : "View every cervical screening case you have submitted."}
           </p>
         </div>

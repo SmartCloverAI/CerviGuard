@@ -7,14 +7,16 @@ const CreateCaseSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+
 export async function GET() {
   const user = await getCurrentAuthenticatedUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-   // All authenticated users can see all cases with user info
-  const cases = await listCasesWithUsers();
+  const cases = user.role === "admin" ? await listCasesWithUsers() : await listCasesForUser(user);
   return NextResponse.json({ cases });
 }
 
@@ -28,6 +30,12 @@ export async function POST(request: Request) {
   const file = formData.get("image");
   if (!file || !(file instanceof File)) {
     return NextResponse.json({ error: "Image file is required" }, { status: 400 });
+  }
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
+    return NextResponse.json({ error: "Unsupported image type" }, { status: 415 });
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    return NextResponse.json({ error: "Image exceeds the 20 MB limit" }, { status: 413 });
   }
 
   const notes = formData.get("notes");
