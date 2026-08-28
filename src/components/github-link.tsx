@@ -21,10 +21,11 @@ export default function GitHubLink() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="View the CerviGuard repository on GitHub"
-      className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 sm:text-sm"
+      title="View the CerviGuard repository on GitHub"
+      className="publication-dock__link inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 sm:text-sm"
     >
       <GitHubIcon className="h-4 w-4" />
-      <span className="hidden sm:inline">View on GitHub</span>
+      <span>View on GitHub</span>
     </Link>
   );
 }

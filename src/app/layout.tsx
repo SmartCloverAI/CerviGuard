@@ -54,14 +54,18 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <ToastContainer />
-          <ServedBy hostId={hostId} edgeNodeCount={edgeNodeCount} />
-          <VersionFooter />
+          <div className="runtime-dock">
+            <ServedBy hostId={hostId} edgeNodeCount={edgeNodeCount} />
+            <VersionFooter />
+          </div>
           {!isEvidenceDemo && (
-            <>
+            <div className="publication-dock">
               <ModelPublicationNote />
-              <HuggingFaceLink />
-              <GitHubLink />
-            </>
+              <div className="publication-dock__links">
+                <HuggingFaceLink />
+                <GitHubLink />
+              </div>
+            </div>
           )}
         </ToastProvider>
       </body>

@@ -108,7 +108,7 @@ export default function NewCaseForm() {
         <label className="mb-1 block text-sm font-medium text-slate-600">Notes (optional)</label>
         <textarea
           rows={4}
-          placeholder="Clinical observations, patient anonymized reference, etc."
+          placeholder="Optional context for this de-identified case"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           maxLength={500}

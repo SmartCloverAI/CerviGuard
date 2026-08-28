@@ -1,14 +1,15 @@
 {
   "name": "app",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test tests/access-control.test.mjs",
-    "test:integration": "node --test tests/access-control.integration.mjs"
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:integration": "node --test tests/access-control.integration.mjs",
+    "test:ui": "node tests/mobile-utility-layout.browser.mjs"
   },
   "dependencies": {
     "@ratio1/cstore-auth-ts": "^0.6.1",
@@ -30,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^16.3.3",
+    "playwright": "1.62.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

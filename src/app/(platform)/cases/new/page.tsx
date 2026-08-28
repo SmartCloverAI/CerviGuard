@@ -23,10 +23,7 @@ export default async function NewCasePage() {
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>Ensure identifying patient markers are obscured prior to upload.</li>
           <li>Accepted formats: JPEG, PNG, WEBP. Maximum size: 20 MB.</li>
-          <li>
-            Processing typically completes in seconds. Complex cases may take longer depending on
-            model load.
-          </li>
+          <li>Processing time depends on the configured model service and deployment environment.</li>
           <li>
             Case details and imagery are limited to the submitting clinician and administrators.
           </li>

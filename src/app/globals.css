@@ -34,4 +34,73 @@
   .badge {
     @apply inline-flex items-center rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-teal-700 ring-1 ring-inset ring-teal-200;
   }
+
+  .runtime-dock {
+    position: static;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    width: calc(100% - 3rem);
+    max-width: 72rem;
+    margin: 1rem auto 0;
+  }
+
+  .runtime-dock__served,
+  .runtime-dock__version {
+    max-width: 100%;
+  }
+
+  .publication-dock {
+    position: static;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: calc(100% - 3rem);
+    max-width: 72rem;
+    margin: 1rem auto 0;
+    padding-bottom: 1.5rem;
+  }
+
+  .publication-dock__note {
+    max-width: none;
+  }
+
+  .publication-dock__links {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .publication-dock__link {
+    min-height: 44px;
+    flex: 1 1 12rem;
+    justify-content: center;
+  }
+
+  @media (min-width: 901px) {
+    .publication-dock {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .publication-dock__note {
+      max-width: 40rem;
+    }
+
+    .publication-dock__links {
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .publication-dock__link {
+      flex: 0 0 auto;
+    }
+  }
 }
