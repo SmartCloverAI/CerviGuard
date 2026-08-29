@@ -24,7 +24,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 <p className="text-base font-semibold text-slate-900">SmartClover</p>
               </div>
             </div>
-            <p className="badge mt-4">CerviGuard clinical review workspace</p>
+            <p className="badge mt-4 normal-case">CerviGuard — Live MVP / Private Beta</p>
             <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl">
               Structured cervical-screening workflows, from intake to clinician review.
             </h1>

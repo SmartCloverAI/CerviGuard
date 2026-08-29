@@ -23,3 +23,11 @@ test("mobile utility controls return to document flow", async () => {
   assert.doesNotMatch(styles, /\.publication-dock[\s\S]{0,500}position: fixed/);
   assert.doesNotMatch(components, /\bfixed\s+bottom-/);
 });
+
+test("public login identifies the CerviGuard product stage", async () => {
+  const authLayout = await readFile("src/app/(auth)/layout.tsx", "utf8");
+
+  assert.match(authLayout, /CerviGuard — Live MVP \/ Private Beta/);
+  assert.match(authLayout, /className="badge mt-4 normal-case"/);
+  assert.doesNotMatch(authLayout, /SmartClover Cervical Screening Pilot/);
+});
